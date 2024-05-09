@@ -1,0 +1,50 @@
+Mechanics
+-Communicating with other vessels will be comunication with a specific Crew Position on that vessel. (adds a lifelike feel to the game)
+-You can develop a kind of relationship with other vessels crewmembers and potentially recruit them.
+--If conditions on your vessel are not favorable for your crew, they can defect to other vessels
+
+- On Death:
+--Loose inventory and gold
+--Loose all but 1 crew 
+--Restart with new vessel at most recent same-faction-colony crafter
+
+-Day/Night cycle
+--use lantern to light up your area.
+
+
+NPC's
+-SpaceX Droneship's: Offer money and scrap metals (certain upgrades) for doing quests or trading in runes.
+
+
+Tools
+-Lantern
+
+
+Threats
+-Boat ignites - Need to put it out (requires crew porportional to fire size)
+--If not put out in time, death. (otherwise burn some inventory)
+
+-Whirl pools - Requires upgraded speed porportional to whirl pool
+--If caught, spew inventory and upgrades off the ship, but get thrown out whirl after a few seconds (randomize inventory)
+
+-Sharks
+--get them off your tail by dropping chum
+--Sharks will ram the boat and knock crew members off, then eat them.
+
+
+Craftables
+-chum
+--Requires 5 fish
+
+Factions
+-SpaceX
+-Pirates
+-Royal
+
+
+Vessel Types
+-Cargo/Transport
+-Hunter/Gatherer
+-Science/exploratory
+-Mercantile/Craft
+-Crashed/Derilect
