@@ -17,11 +17,10 @@ class BoatShop(NonPlayerCharacter):
         self.dialoge = boat_shop_dialog['greetings'][self.relation]
         self.speed = 20
         self.starting_pos = 200, 200
-        self.inventory_ui = InventoryMenu(display_group[1], self, (250, 15))
-        self.trade_ui = TradeMenu(display_group[1], self)
+        self.inventory_ui = InventoryMenu(display_group['overlay'], self, (250, 15))
+        self.trade_ui = TradeMenu(display_group['overlay'], self)
         super().__init__(display_group, starting_pos = self.starting_pos)
         self.tools['fishing_pole'].base_catch_rate = 0.15
-
 
         #inventory management setup
         self.gold = 100
@@ -42,10 +41,11 @@ class BoatShop(NonPlayerCharacter):
         super().update(dt)
         self._get_movement_status()
         
-    def interact(self, interactor) -> None:
+    def interact(self) -> None:
         #boatshops should give their introduction, then display inventory and trade menu.
-        dialog = boat_shop_dialog["greetings"][self.relation]
-        self.dialog_box.process_text(dialog, interactor, random.choice(self.crew_list))
+        self.dialog_box.dialoge = boat_shop_dialog["greetings"][self.relation]
         self.relation = 'familiar'
-
+        self.dialog_box.speaking_crew = random.choice(self.crew_list)
+        self.interrupt()
+        return self.dialog_box
         

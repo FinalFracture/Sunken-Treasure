@@ -1,11 +1,12 @@
 import pygame
 from SETTINGS import *
+from input_manager import EventHandler
 from ship import Ship
 from shop import BoatShop
 from npcs import NPCGenerator
 
 class Level:
-    """This class is the root class of the game. This is the main game loop."""
+    """The main game loop. Highest level logic"""
     def __init__(self, game) -> None:
         self.game = game
 
@@ -16,81 +17,63 @@ class Level:
         self.all_sprites = CameraGroup()
         self.overlay_sprites = Overlay_group()
         self.collision_group = pygame.sprite.Group()
-        self.draw_groups = {0:self.all_sprites, 1:self.overlay_sprites, 2:self.collision_group}
+        self.draw_groups = {'all':self.all_sprites, 'overlay':self.overlay_sprites, 'collision':self.collision_group}
 
         self.setup()
 
     def setup(self) -> None:
-        #set up sprites
+        """Initialize major game assets"""
         
         #Initialize the player and assets
         self.player = Ship(self, self.draw_groups)
+        self.event_handler = EventHandler(self.player)
         self.npc_generator = NPCGenerator()
+
+        # npc's needs a generating function/logic to get rid of this awful list idea. Next important move i guess
         self.interactables = [BoatShop(self.draw_groups), self.npc_generator.generate_npc(self.draw_groups, 'fishing_vessel')]
         
-
-
         #lists and dicts
-        self.pause_overworld_ui_list = [self.player.inventory_ui, self.interactables[0].dialog_box, self.interactables[1].dialog_box]
-        self.timers = {}
+        self.game_state = 'normal'
+        self.dialoge_boxes = [npc.dialog_box for npc in self.interactables if npc.dialog_box]
+        self.pause_overworld_ui_list = [self.player.inventory_ui, self.interactables[0].inventory_ui]
         self.maps = []
 
     def run(self, dt):
         #start every frame with a clean screen
+        self._check_game_state()
         self.main_surface.fill('blue')   
 
         #draw to the screen and update positions
-        self._input()
-        self._update_sprites(dt)
+        self.event_handler.run(dt, self.game_state)
         self.update_timers()
-        self.update_menus(dt)
+        if self.game_state == 'normal':
+            self.overlay_sprites.update(dt)
+            self.all_sprites.update(dt)
+        elif self.game_state in ('menu', 'dialoge'):
+            self.overlay_sprites.update(dt)
+            self.update_menus(dt)
         self.all_sprites.custom_draw(self.player) 
         self.overlay_sprites.custom_draw()
 
     def update_menus(self, dt):
         #determine when to update menu objects
-        for menu in self.pause_overworld_ui_list:
-            menu.update(dt)
+        if any(menu.is_active for menu in self.pause_overworld_ui_list):
+            for menu in self.pause_overworld_ui_list:
+                menu.update(dt)
 
     def update_timers(self) -> None:
-
-        if any(self.timers):
-            for timer in self.timers.values():
-                timer.update()
-        
-        
+        """Update any time or clock based functions for each sprite.""" 
         for sprite in self.all_sprites:
             for timer in sprite.timers.values():
-                if any(menu.is_active for menu in self.pause_overworld_ui_list):
-                    timer.paused = True
-                else:
-                    timer.paused = False
+                timer.update()
 
-    def _input(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_LCTRL] and keys[pygame.K_9]:
-            self._save_game()
-
-    def _update_sprites(self, dt):
-        for sprite in self.all_sprites:
-            try:
-                if sprite.collideable and sprite not in self.collision_group:
-                    self.collision_group.add(sprite)
-            except:
-                None
-
-        self.overlay_sprites.update(dt)
-        if not any(menu.is_active for menu in self.pause_overworld_ui_list):
-            self.all_sprites.update(dt) 
-
-    def _save_game(self):
-        save_dict = {'gold': self.player.gold,
-                     'pos': (self.player.rect.x, self.player.rect.y),
-                     'inventory': self.player.inventory}
-
-        for key, value in save_dict.items():
-            self.game.log.write(f'{key} : {value}\n')
+    def _check_game_state(self) -> None:
+        if any(menu.is_active for menu in self.pause_overworld_ui_list):
+            self.game_state = 'menu'
+        elif any(dialoge_box.is_active for dialoge_box in self.dialoge_boxes):
+            self.game_state = 'dialoge'
+        else:
+            self.game_state = 'normal'
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):

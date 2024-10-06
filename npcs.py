@@ -32,11 +32,13 @@ class GenericNPC(NonPlayerCharacter):
             full_path = f'images/characters/npcs/{self.ship_type}/{animation}'
             self.animations[animation] = import_folder(full_path)
             
-    def interact(self, interactor):
-        #this will be interesting to overcome. Will likey need to make another dictionary with interaciton stuff. 
-        dialoge = NPC_dialoge_1['greetings'][self.relation]
-        self.dialog_box.process_text(dialoge, interactor, random.choice(self.crew_list))
+    def interact(self) -> None:
+        #boatshops should give their introduction, then display inventory and trade menu.
+        self.dialog_box.dialoge = NPC_dialoge_1["greetings"][self.relation]
         self.relation = 'familiar'
+        self.dialog_box.speaking_crew = random.choice(self.crew_list)
+        self.interrupt()
+        return self.dialog_box
 
     def update(self, dt) -> None:
         pass
