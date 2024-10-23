@@ -12,6 +12,14 @@ class EventHandler:
         """Event handler is the sole checker for mouse and keyboard inputs. Should only have one instance per game instance."""
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
+        interaction_keys = [pygame.K_1, 
+                        pygame.K_2, 
+                        pygame.K_3, 
+                        pygame.K_4, 
+                        pygame.K_5, 
+                        pygame.K_6, 
+                        pygame.K_e, 
+                        pygame.K_LSHIFT]
         for event in pygame.event.get():
             #check for events to exit the game.
             if event.type == pygame.QUIT:
@@ -25,5 +33,5 @@ class EventHandler:
             self.player.menu_input(keys, mouse_pos)
         else:
             self.player.movement_input(keys)
-            self.player.ui_input(keys, mouse_pos)
+            self.player.ui_input(keys, mouse_pos, interaction_keys)
 

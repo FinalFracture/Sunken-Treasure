@@ -82,8 +82,7 @@ class DialogBox(pygame.sprite.Sprite):
     def update(self, dt):
         if self.is_active:
             self.text_box.text = self.text
-            self._animate_text(dt)
-            
+            self._animate_text(dt)    
 
     def process_text(self, interactee):
         self.is_active = True
@@ -94,7 +93,6 @@ class DialogBox(pygame.sprite.Sprite):
             self.shown_characters.append(self.text[character:character+40])
         self.dialoge_identifier = self.text[-1]
         self._check_status()
-
 
     def _animate_text(self, dt):
         if self.text_on_screen_index > len(self.shown_characters) -1:

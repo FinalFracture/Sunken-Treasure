@@ -15,7 +15,7 @@ class Game:
             log_file.write(text)
         self.window = pygame.display.set_mode((screen_width, screen_height)) #calling from settings, set the height and width of the display window
         pygame.display.set_caption('Treasures of the Surf')
-        pygame.display.set_icon(pygame.image.load('images\\animals\carp\carp.png'))
+        pygame.display.set_icon(pygame.image.load('images\items\\fish\carp\carp.png'))
         self.clock = pygame.time.Clock() #for creating a framerate independant animation setup. 
         self.level = Level(self) #start the main game logic
 

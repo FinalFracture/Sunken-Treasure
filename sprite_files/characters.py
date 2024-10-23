@@ -1,6 +1,6 @@
 import pygame
 import random
-from .sprites import Generic, Textbox, DialogBox
+from .sprites import DialogBox
 from support import import_folder
 from timer import Timer
 from SETTINGS import *
@@ -10,25 +10,42 @@ from sprite_files.items import Crew
 
 class All_Characters(pygame.sprite.Sprite):
     """This class will provide identical shared mechanics that all vessels will use"""
-    def __init__(self, groups, starting_pos):
+    def __init__(self, groups, starting_pos:tuple, ship_type:str):
         super().__init__(groups['all'])
         self.display_groups = groups
         self.z = cameragroup_layers['main']
         self.starting_pos = starting_pos
+        self.ship_type = ship_type
+        self._general_setup()
+        self.import_assets('pickaxe')
+        self.import_assets('fishing_pole')
         self._animation_setup()
         self._image_setup()
         self._movement_setup()
-        self._general_setup()
+
+    def import_assets(self, tool_name):
+        """tool_name: name of tool that player uses
+            e.g. tool_name = fishing_pole
+            This class will locate the file path of each image for the player and store it in a class list"""
+        if tool_name:
+            directions = ('left_', 'right_')
+            for direction in directions:
+                if not self.animations.get(direction+tool_name):
+                    self.animations[direction+tool_name] = []
+        for animation, list_of_images in self.animations.items():
+            full_path = f'images/characters/{self.ship_type}/' + animation
+            self.animations[animation] = import_folder(full_path)
         
     def _general_setup(self):
         #stats setup
         self.gold = 50
         self.inventory = []
         self.timers = {}
-        self.crew_list = [Crew(self.display_groups['overlay'], 'fisherman',owner=self)] # all characters start with a fisherman
+        self.crew_list = [Crew(self.display_groups['overlay'], 'rockhound',owner=self), Crew(self.display_groups['overlay'], 'angler',owner=self)] # all characters start with an angler for now
         self.tools = {}
+        self.animations = {'left': [], 'right': []}
         for crew in self.crew_list:
-            for tool_name, tool in crew.tools.items():
+            for tool_name, tool in crew.tool.items():
                 self.tools[tool_name] = tool
         self.display_groups['collision'].add(self)
         
@@ -50,9 +67,8 @@ class All_Characters(pygame.sprite.Sprite):
         #flags
         self.using_tool = False
         self.interacting = False
-        self.selected_tool = 'fishing_pole'
-        self.last_used_tool = None
-        self.status = 'up' #status to indicate what the sprite is doing/direction to face
+        self.selected_tool = None
+        self.status = 'left' #status to indicate what the sprite is doing/direction to face
         self.status_hold = self.status #This stores the value to revert back to when an animation is over, and keep the correct orientation
         self.frame_index = 0 #increments with animation
 
@@ -99,19 +115,13 @@ class All_Characters(pygame.sprite.Sprite):
         """Check for an interaction, tool use, or menu useage"""
 
         #get tool status
-        if self.selected_tool == 'fishing_pole' and self.using_tool:
-            self.last_used_tool = self.selected_tool
+        if self.selected_tool is not None and self.using_tool:
             self.status = self.status.split('_')[0] + '_' + self.selected_tool
             self.tools[self.selected_tool].use(dt)
-        elif self.last_used_tool == 'fishing_pole' and not self.using_tool:
-            self.last_used_tool = None
-            try:
-                self.tools[self.selected_tool].current_catch.kill() #get rid of the sprite that lingers on screen when you stop using the tool during a catch animation.
-                
-            except:
-                pass
-        else:
+        elif not self.using_tool:
             self.status = self.status_hold
+            #self.tools[self.selected_tool].current_find.kill() #get rid of the sprite that lingers on screen when you stop using the tool during a catch animation.
+        #else:  
   
     def animate(self, dt):
         self.status_rect.center = (self.rect.centerx, self.rect.top)
@@ -142,8 +152,8 @@ class All_Characters(pygame.sprite.Sprite):
 
 class NonPlayerCharacter(All_Characters):
     """The non player character class will encompass all self moving objects that are not the player."""
-    def __init__(self, groups, starting_pos=(0,0)):
-        super().__init__(groups, starting_pos)
+    def __init__(self, groups, ship_type, starting_pos=(0,0)):
+        super().__init__(groups, starting_pos, ship_type)
         #initialization setup
         self._npc_setup(groups)
         self.dialog_box = DialogBox(groups

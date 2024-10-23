@@ -9,7 +9,7 @@ class Overlay(pygame.sprite.Sprite):
         self.group = group
         self.owner = owner
         self.image = pygame.image.load('images/hud/heads_up.png').convert_alpha()
-        self.rect = self.image.get_rect(topleft = (0, 425))
+        self.rect = self.image.get_rect(centerx=screen_width/2, bottom=screen_height)
         self.z = overlay_layers['hud']
         self.gold = Textbox(self.group, self, z=overlay_layers['hud_elements'], offset=(135, 10))
         self.bearing = Textbox(self.group, self, z=overlay_layers['hud_elements'], offset=(395, 35))
@@ -34,7 +34,9 @@ class Overlay(pygame.sprite.Sprite):
         for member_number, member_role in enumerate(crew_list):
             self.crew_list[member_number] = member_role
         for crew_index, crew_icon in self.crew_list.items():
+            crew_icon.group.add(crew_icon)
             crew_icon.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
+            crew_icon.z = overlay_layers['hud_elements']
 
 class ItemStatBox(pygame.sprite.Sprite):
     #the sprite to display an items value, description, weight, and other values
@@ -79,23 +81,25 @@ class Icon_bg(pygame.sprite.Sprite):
             #remove the value display from the display group
             self.value_display.text=''
             
-
     def deselect(self):
         #this will be called any time we need the inventory item to be deselected by any process
-        try:
+        if self.indicator:
             self.indicator.kill()
-        except:
-            pass
-        finally:
-            self.selected = False
+        self.selected = False
     
-    def click(self):
+    def click(self, toggle=None):
         #define what happens when the mouse clicks while in the rect boundary of an icon bg.
-        if self.subject and self.selected:
+        if toggle == 0:
             self.deselect()
-        elif self.subject and not self.selected:
+        elif toggle == 1:
             self.indicator = MenuIndicator(self.group, self.rect)
             self.selected = True
+        else:
+            if self.subject and not self.selected:
+                self.indicator = MenuIndicator(self.group, self.rect)
+                self.selected = True
+            elif self.subject and self.selected:
+                self.deselect()
 
 class UpgradeIconBg(pygame.sprite.Sprite):
     def __init__(self, group, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
@@ -121,20 +125,21 @@ class UpgradeIconBg(pygame.sprite.Sprite):
 
     def deselect(self):
         #this will be called any time we need the inventory item to be deselected by any process
-        try:
-            self.indicator.kill()
-        except:
-            pass
-        finally:
-            self.selected = False
+        self.indicator.kill()
     
-    def click(self):
+    def click(self, toggle=None):
         #define what happens when the mouse clicks while in the rect boundary of an icon bg.
-        if self.subject and not self.selected:
+        if toggle == 0:
+            self.deselect()
+        elif toggle == 1:
             self.indicator = MenuIndicator(self.group, self.rect)
             self.selected = True
-        if self.subject and self.selected:
-            self.deselect()
+        else:
+            if self.subject and not self.selected:
+                self.indicator = MenuIndicator(self.group, self.rect)
+                self.selected = True
+            if self.subject and self.selected:
+                self.deselect()
 
 class MenuIndicator(pygame.sprite.Sprite):
     """When the player selects items to purchase, this class highlights the selected item slots to 

@@ -1,15 +1,12 @@
 import pygame
 from SETTINGS import * 
-from support import import_folder
-from timer import Timer
 from sprite_files.characters import All_Characters
 from sprite_files.hud import Overlay
 from menu_files.Inventory_menu import InventoryMenu
 
 class Ship(All_Characters): 
-    def __init__(self, game, groups):
-        self._import_assets()
-        super().__init__(groups, starting_pos=(0,0))
+    def __init__(self, game, groups, ship_type):
+        super().__init__(groups, starting_pos=(0,0), ship_type=ship_type)
         self.game = game
         self.groups = groups
         self.inventory_ui = InventoryMenu(groups['overlay'], self, (5, 15))
@@ -22,15 +19,6 @@ class Ship(All_Characters):
         self.is_clicking = False
         self.is_key_pressed = False
         self.dialoge = None
-
-    def _import_assets(self):
-        """pull all needed images to generate animations"""
-        self.animations = {'up': [], 'down': [], 'left': [], 'right': [], 
-                           'up_fishing_pole':[], 'down_fishing_pole':[], 'left_fishing_pole':[], 'right_fishing_pole':[]
-                             }
-        for animation in self.animations.keys():
-            full_path = 'images/ship/' + animation
-            self.animations[animation] = import_folder(full_path)
 
     def _get_status(self, dt):
         super()._get_status(dt)
@@ -60,6 +48,7 @@ class Ship(All_Characters):
         self._navigation()
         super().update(dt)
         self._move(dt)
+        self.overlay.position_crew_icons(self.crew_list)
 
     def movement_input(self, keys):
         """Function is called by the game event handler"""
@@ -76,7 +65,6 @@ class Ship(All_Characters):
 
         if keys[pygame.K_w]: #move up
             self.direction.y = -1
-            self.status, self.status_hold = 'up', 'up'
 
         elif keys[pygame.K_s]: # move down
             self.direction.y = 1
@@ -84,39 +72,51 @@ class Ship(All_Characters):
         else: # No vertical movement
             self.direction.y = 0
   
-    def ui_input(self, keys, mouse_pos):
-
+    def ui_input(self, keys, mouse_pos, interaction_keys:list):
         def _single_click_operations():
-            for crew_icon in self.crew_list:
-                if crew_icon.rect.collidepoint(mouse_pos) and not self.using_tool: #use assigned tool
-                    self.selected_tool = crew_icon.stats['tool']
-                    crew_icon.update_status('selected')
-                    self.using_tool = True
+            for crew in self.crew_list:
+                if crew.rect.collidepoint(mouse_pos):
                     self.is_clicking = True
-                elif crew_icon.rect.collidepoint(mouse_pos) and self.using_tool: #stop using assigned tool
-                    self.using_tool = False   
-                    crew_icon.update_status('unselected')
-                    self.is_clicking = True 
-
+                    self.deselect_tools()
+                    if not self.selected_tool == crew.stats['tool']:
+                        self.selected_tool = crew.stats['tool']
+                        crew.toggle_status()
+                        self.using_tool = True
+                    else:
+                        self.using_tool = False
+                        self.selected_tool = None  
+ 
         def _single_press_operations():
-            if keys[pygame.K_1] and not self.using_tool: 
-                self.selected_tool = self.crew_list[0].stats['tool']
-                self.crew_list[0].update_status('selected')
-                self.using_tool = True
+            if keys[pygame.K_1]:
+                key_press = 1
+                self.deselect_tools()
                 self.is_key_pressed = True
-
-            elif keys[pygame.K_1] and self.using_tool: 
-                    self.crew_list[0].update_status('unselected')
+                if not self.selected_tool == self.crew_list[key_press-1].stats['tool']:
+                    self.using_tool = True
+                    self.crew_list[key_press-1].toggle_status()
+                    self.selected_tool = self.crew_list[key_press-1].stats['tool']
+                else:
                     self.using_tool = False
-                    self.is_key_pressed = True
+                    self.selected_tool = None
+
+            elif keys[pygame.K_2]:
+                key_press = 2
+                self.deselect_tools()
+                self.is_key_pressed = True
+                if not self.selected_tool == self.crew_list[key_press-1].stats['tool']:
+                    self.using_tool = True
+                    self.crew_list[key_press-1].toggle_status()
+                    self.selected_tool = self.crew_list[key_press-1].stats['tool']
+                else:
+                    self.using_tool = False
+                    self.selected_tool = None
 
             elif keys[pygame.K_LSHIFT] and not self.interacting: #interact with objects
                 self.interacting = True
                 self.is_key_pressed = True
 
-            elif keys[pygame.K_e] and not self.inventory_ui.is_active:
+            elif keys[pygame.K_e]:
                 self.inventory_ui.show_menu()
-                self.overlay.position_crew_icons(self.crew_list)
                 self.is_key_pressed = True
 
             if not keys[pygame.K_LSHIFT]:
@@ -129,7 +129,7 @@ class Ship(All_Characters):
 
         if not self.is_key_pressed:
             _single_press_operations()
-        elif not any(pygame.key.get_pressed()):
+        elif not any(keys[key] for key in interaction_keys):
             self.is_key_pressed = False
 
     def dialoge_input(self, keys) -> None:
@@ -163,6 +163,12 @@ class Ship(All_Characters):
         else:
             self.knotical_speed = 0
 
+    def deselect_tools(self) -> None:
+        """deselect each crew member"""
+        for crew in self.crew_list:
+            if crew.status == 'selected':
+                crew.toggle_status()
+                
     def _stat_error_handling(self):
         #this will check for stats that attempt to go over the maximum, like gold exceeding 99,999,999
         if self.gold > 99999999:

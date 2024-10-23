@@ -1,4 +1,7 @@
 import random
+from actions.fishing import FishingPole
+from actions.mining import Pickaxe
+from support import import_folder
 
 used_names = []
 def generate_name() -> str:
@@ -19,6 +22,15 @@ def generate_tool_modifier():
   generated_number = random.random()
   adjusted_number = bottom_of_range + generated_number * (top_of_range - bottom_of_range)
   return adjusted_number
+
+def _import_assets():
+  for role, stat_dict in crew_stats.items():
+    for status in statuses:
+      full_path = 'images/crew/' + role +'/' + status
+      stat_dict[status] = import_folder(full_path)
+
+def items_init():
+  _import_assets()
 
 first_names = [
 'Aaron',
@@ -395,52 +407,33 @@ last_names = [
 'Zhu'
 ]
 
-fish_stats = {
-            'tuna': {
-                    'image': []
-                    ,'value': 250
-                    ,'weight': 55
-                    ,'rarity': 'Rare' 
-                    ,'description1': 'A massive fish. Just'
-                    ,'description2': '1 can feed a village.'
-                }
-            ,'catfish': {
-                    'image': []
-                    ,'value': 35
-                    ,'weight': 5
-                    ,'rarity': 'uncommon'
-                    ,'description1': 'Large bottom feeding fish.' 
-                    ,'description2':'Easier to find while still.' 
-                }
-            ,'salmon': {
-                    'image': []
-                    ,'value': 23
-                    ,'weight': 3
-                    ,'rarity': 'common' 
-                    ,'description1': 'A treat to some groups.' 
-                    ,'description2':'Prefers colder climates.'
-                }
-            ,'carp': {
-                'image': []
-                ,'value': 5
-                ,'weight': 8
-                ,'rarity': 'rare' 
-                ,'description1':'Extremely common, carp ' 
-                ,'description2':'are an invasive species.'
-            }
-}
-
+statuses = ['selected', 'unselected']
 crew_stats = {
-    'fisherman': {
+    'angler': {
                     'name': ''
+                    ,'value':'C'
                     ,'tool_modifier': 0
                     ,'tool': 'fishing_pole'
+                    ,'tool_class': FishingPole
                     ,'rarity': 'Common' 
-                    ,'description1': 'Fisherman provide many'
+                    ,'description1': 'Anglers provide many'
                     ,'description2': 'options to catching fish.'
+                    ,'selected':[]
+                    ,'unselected':[]
+                },
+    'rockhound': {
+                    'name': ''
+                    ,'value':'C'
+                    ,'tool_modifier': 0
+                    ,'tool': 'pickaxe'
+                    ,'tool_class': Pickaxe
+                    ,'rarity': 'Common' 
+                    ,'description1': 'Rockhounds specialize in'
+                    ,'description2': 'finding rocks and gems.'
+                    ,'selected':[]
+                    ,'unselected':[]
                 }
 }
 
+
 treasure_list = {'boot': [], 'rune': [], 'metal shard': []}
-crew_role_list = {'fisherman': {'selected': []
-                                ,'unselected':[]}}

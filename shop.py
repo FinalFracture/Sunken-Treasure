@@ -1,41 +1,30 @@
 import pygame
 import random
 from SETTINGS import *
-from support import import_folder
 from npc_dialog_trees import boat_shop_dialog
-from timer import Timer
 from menu_files.trade_menu import TradeMenu
 from menu_files.Inventory_menu import InventoryMenu
 from sprite_files.items import *
 from sprite_files.characters import NonPlayerCharacter
 
 class BoatShop(NonPlayerCharacter):
-    def __init__(self, display_group) -> None:
-        self._import_assets()
+    def __init__(self, display_group, ship_type) -> None:
         self.relation = 'new'
-        self.selected_tool = 'fishing pole'
+        self.ship_type = ship_type
+        self.selected_tool = None
         self.dialoge = boat_shop_dialog['greetings'][self.relation]
         self.speed = 20
         self.starting_pos = 200, 200
-        self.inventory_ui = InventoryMenu(display_group['overlay'], self, (250, 15))
+        self.inventory_ui = InventoryMenu(display_group['overlay'], self, (600, 15))
         self.trade_ui = TradeMenu(display_group['overlay'], self)
-        super().__init__(display_group, starting_pos = self.starting_pos)
-        self.tools['fishing_pole'].base_catch_rate = 0.15
+        super().__init__(display_group, starting_pos = self.starting_pos, ship_type=self.ship_type)
+        #self.tools['fishing_pole'].base_catch_rate = 0.15
 
         #inventory management setup
         self.gold = 100
         self.inventory = []
         for item in self.inventory:
             display_group[0].remove(item)
-
-    def _import_assets(self):
-        """pull all needed images to generate animations"""
-        self.animations = {'up': [], 'down': [], 'left': [], 'right': [], 
-                           'up_fishing_pole':[], 'down_fishing_pole':[], 'left_fishing_pole':[], 'right_fishing_pole':[]
-                             }
-        for animation in self.animations.keys():
-            full_path = 'images/characters/traveling_shop/' + animation
-            self.animations[animation] = import_folder(full_path)
 
     def update(self, dt):
         super().update(dt)

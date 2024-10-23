@@ -16,21 +16,10 @@ class NPCGenerator:
 class GenericNPC(NonPlayerCharacter):
     def __init__(self, camera_group:pygame.sprite.Group, starting_loc:tuple[int,int], ship_type:str, *crew):
         self.ship_type = ship_type
-        self._import_assets()
-        super().__init__(camera_group, starting_loc)
+        super().__init__(camera_group, self.ship_type, starting_loc)
         self.starting_loc = starting_loc
-        self.image = self.animations[self.status][self.frame_index]
         self.relation = 'new'
         self.dialoge = NPC_dialoge_1['greetings'][self.relation]
-
-    def _import_assets(self):
-        """load each animation frame for the corresponding direction, into the list of images for that direction."""
-        self.animations = {'up': [], 'down': [], 'left': [], 'right': [], 
-                           'up_fishing_pole':[], 'down_fishing_pole':[], 'left_fishing_pole':[], 'right_fishing_pole':[]
-                             }
-        for animation in self.animations.keys():
-            full_path = f'images/characters/npcs/{self.ship_type}/{animation}'
-            self.animations[animation] = import_folder(full_path)
             
     def interact(self) -> None:
         #boatshops should give their introduction, then display inventory and trade menu.

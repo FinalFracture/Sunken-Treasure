@@ -4,11 +4,14 @@ from input_manager import EventHandler
 from ship import Ship
 from shop import BoatShop
 from npcs import NPCGenerator
+from sprite_files.items import Crew
+from item_stat_dicts import items_init
 
 class Level:
     """The main game loop. Highest level logic"""
     def __init__(self, game) -> None:
         self.game = game
+        items_init()
 
         #get the display surface
         self.main_surface = pygame.display.get_surface()
@@ -25,12 +28,12 @@ class Level:
         """Initialize major game assets"""
         
         #Initialize the player and assets
-        self.player = Ship(self, self.draw_groups)
+        self.player = Ship(self, self.draw_groups, 'galleon')
         self.event_handler = EventHandler(self.player)
         self.npc_generator = NPCGenerator()
 
         # npc's needs a generating function/logic to get rid of this awful list idea. Next important move i guess
-        self.interactables = [BoatShop(self.draw_groups), self.npc_generator.generate_npc(self.draw_groups, 'fishing_vessel')]
+        self.interactables = [BoatShop(self.draw_groups, 'raft'), self.npc_generator.generate_npc(self.draw_groups, 'sloop')]
         
         #lists and dicts
         self.game_state = 'normal'
@@ -101,3 +104,5 @@ class Overlay_group(pygame.sprite.Group):
             for sprite in self.sprites():
                 if sprite.z == layer:
                     self.display_surface.blit(sprite.image, sprite.rect)
+                #if type(sprite) == Crew:
+                    #self.display_surface.blit(sprite.image, sprite.rect)
