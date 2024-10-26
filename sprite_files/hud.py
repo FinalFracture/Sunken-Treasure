@@ -40,7 +40,7 @@ class Overlay(pygame.sprite.Sprite):
         for member_number, member_role in enumerate(crew_list):
             self.crew_list[member_number] = member_role
         for crew_index, crew_icon in self.crew_list.items():
-            crew_icon.group.add(crew_icon)
+            self.group.add(crew_icon)
             crew_icon.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
             crew_icon.z = overlay_layers['hud_elements']
 

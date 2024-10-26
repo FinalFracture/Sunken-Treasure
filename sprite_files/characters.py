@@ -139,7 +139,7 @@ class All_Characters(pygame.sprite.Sprite):
         for timer in self.timers.values():
             timer.update()
         
-    def resume_timers(self):
+    def resume_play(self):
         for timer in self.timers.values():
             timer.resume()
             

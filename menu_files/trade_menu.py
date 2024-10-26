@@ -27,11 +27,11 @@ class TradeMenu(pygame.sprite.Sprite):
         self.gold_textbox:Textbox = Textbox(self.group, self, offset=(239, 55), position='relative')
         self.buttons:list[UiButton] = [self.buy_button, self.sell_button]
         self.temp_buttons:list[UiButton] = []
+        self.transactable_spaces = []
         self.menu_ui:list = [self, self.buy_button, self.sell_button, self.gold_textbox]
 
     def show_menu(self, interactor) -> None:
         self.interactor = interactor
-        self.transactable_spaces = []
         self.transactable_spaces.extend(self.owner.inventory_ui.setup_trading())
         self.transactable_spaces.extend(self.interactor.inventory_ui.setup_trading())
  
@@ -176,5 +176,6 @@ class TradeMenu(pygame.sprite.Sprite):
         self.interactor.inventory_ui.exit()
         self.owner.inventory_ui.exit()
         self.is_active = False
+        self.transactable_spaces.clear()
         for element in self.menu_ui:
             self.group.remove(element)

@@ -1,5 +1,6 @@
 import pygame
 import math
+from typing import Union, Callable
 from sprite_files.hud import Icon_bg, ItemStatBox, Clipboard
 from SETTINGS import *
 
@@ -90,10 +91,10 @@ class InventoryMenu(pygame.sprite.Sprite):
 
     def menu_refresh(self):
         #run all commands when the menu needs to be refreshed
-        self._clear_inventory_squares()
         self._clear_crew_squares()
-        self._fill_inventory_squares()
         self._fill_crew_squares()
+        self._clear_inventory_squares()
+        self._fill_inventory_squares()
         self.sidebar.update_buttons()
 
     def _clear_inventory_squares(self) -> None:  
@@ -193,9 +194,9 @@ class InventoryMenu(pygame.sprite.Sprite):
                 _update_item_window(None)
         #key based interaction
         if not self.key_pressed and keys[pygame.K_ESCAPE] and self.is_active:
-            self.owner.overlay.position_crew_icons(self.crew_list)
-            self.exit()
             self.key_pressed = True
+            self.exit()
+            
 
         if keys[pygame.K_d] and self.is_active and not self.key_pressed:
             self.active_inventory_page += 1
@@ -207,7 +208,7 @@ class InventoryMenu(pygame.sprite.Sprite):
             self.menu_refresh()
             self.key_pressed = True
 
-    def update(self, dt):
+    def update(self, dt) -> None:
         if self.is_active:
             self.input()
 
@@ -220,7 +221,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.is_active = False
         self.is_sole_operating = True
         self.sidebar.exit()
-        self.owner.resume_timers()
+        self.owner.resume_play()
 
     def sort_inventory(self, sort_type='alphabetical', reversed=False) -> None:
         if sort_type == 'alphabetical':

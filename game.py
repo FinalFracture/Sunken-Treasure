@@ -52,8 +52,8 @@ class Level:
             self.overlay_sprites.update(dt)
             self.all_sprites.update(dt)
         elif self.game_state in ('menu', 'dialoge'):
-            self.overlay_sprites.update(dt)
             self.update_menus(dt)
+            self.overlay_sprites.update(dt)
         self.all_sprites.custom_draw(self.player) 
         self.overlay_sprites.custom_draw()
 

@@ -11,7 +11,6 @@ class Ship(All_Characters):
         self.groups = groups
         self.inventory_ui = InventoryMenu(groups['overlay'], self, (5, 15))
         self.inventory_ui.sidebar.make_button({'name':'Drop', 'func':self.inventory_ui.drop_item})
-        self.inventory_ui.sidebar
         self.overlay = Overlay(groups['overlay'], self)
         self.gps_coord = (0,0)
         self.speed = 80 
@@ -50,7 +49,6 @@ class Ship(All_Characters):
         self._navigation()
         super().update(dt)
         self._move(dt)
-        self.overlay.position_crew_icons(self.crew_list)
 
     def movement_input(self, keys):
         """Function is called by the game event handler"""
@@ -156,7 +154,9 @@ class Ship(All_Characters):
 
     def menu_input(self, keys, mouse_pos):
         if self.inventory_ui.is_active:
-            self.inventory_ui.input()
+            return_clause = self.inventory_ui.input() # currently only used to re position crew icons
+            if return_clause == 'exit':
+                self.overlay.position_crew_icons(self.crew_list)
 
     def _navigation(self):
         self.gps_coord = (int(self.rect.x / 7), int((self.rect.y / 7)*-1))
@@ -170,7 +170,11 @@ class Ship(All_Characters):
         for crew in self.crew_list:
             if crew.status == 'selected':
                 crew.toggle_status()
-                
+
+    def resume_play(self):
+        self.overlay.position_crew_icons(self.crew_list)
+        return super().resume_play()
+
     def _stat_error_handling(self):
         #this will check for stats that attempt to go over the maximum, like gold exceeding 99,999,999
         if self.gold > 99999999:
