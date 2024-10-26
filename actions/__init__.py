@@ -1,5 +1,5 @@
 from timer import Timer
-from sprite_files.sprites import Generic
+from sprite_files.hud import Generic
 from SETTINGS import *
 
 class Tool:
@@ -15,11 +15,15 @@ class Tool:
     def _animate_a_find(self, caught_item, dt):
         current_find = Generic(self.owner.status_rect.topleft, caught_item.image, self.owner.display_groups['all'], z = cameragroup_layers['hud'])
         current_find_image_pos = [self.owner.status_rect.left, self.owner.status_rect.top]
-
+        
         def _move_up(dt):
             current_find_image_pos[1] -= 40 * dt
             current_find.rect.center = (current_find_image_pos[0], current_find_image_pos[1])
+        
+        current_find.timers = {current_find:Timer(1250, running_func=_move_up, ending_func=current_find.kill)}
+        current_find.timers[current_find].activate()
 
-        self.timers[current_find] = Timer(1250, running_func=_move_up, ending_func=current_find.kill)
-        self.timers[current_find].activate()
+    def _update_timers(self) -> None:
+        for timer in self.timers.values():
+            timer.update()
 

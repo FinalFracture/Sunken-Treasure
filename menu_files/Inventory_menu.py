@@ -1,17 +1,17 @@
 import pygame
 import math
-from sprite_files.hud import Icon_bg, ItemStatBox
+from sprite_files.hud import Icon_bg, ItemStatBox, Clipboard
 from SETTINGS import *
-
 
 class InventoryMenu(pygame.sprite.Sprite):
     def __init__(self, group: pygame.sprite.Group, owner:pygame.sprite.Sprite, top_left_pos:tuple) -> None:
         super().__init__(group)
         self.group= group
-        self.is_active = False
-        self.z = overlay_layers['menu']
-        self.owner = owner
-        self.key_pressed = False
+        self.is_active:bool = False
+        self.is_sole_operating:bool = True # flag to indicate if other inventories are open at the same time, like a shop.
+        self.z:int = overlay_layers['menu']
+        self.owner:pygame.sprite.Sprite = owner
+        self.key_pressed:bool = False
         self._menu_setup(top_left_pos)
         self.group.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
 
@@ -65,9 +65,10 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))
         self.item_stats_display = ItemStatBox(self.group, self.rect, (25,10))
+        self.sidebar = Clipboard(self.group, (self.rect.right+15, self.rect.top), self )
 
         #items to display setup
-        self.menu_ui = [self, self.item_stats_display] + self.item_stats_display.ui_elements
+        self.menu_ui = [self, self.item_stats_display, self.sidebar] + self.item_stats_display.ui_elements
 
         self.inventory_slots = _setup_inv_slots()
         _setup_crew_slots()
@@ -82,6 +83,7 @@ class InventoryMenu(pygame.sprite.Sprite):
     def show_menu(self) -> None:
         """ display to the screen and add to players inventory"""
         self.is_active = True
+        self.sidebar.show()
         for item in self.menu_ui:
             self.group.add(item)
         self.menu_refresh()
@@ -92,6 +94,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self._clear_crew_squares()
         self._fill_inventory_squares()
         self._fill_crew_squares()
+        self.sidebar.update_buttons()
 
     def _clear_inventory_squares(self) -> None:  
         #remove all inventory items from display groups.
@@ -154,6 +157,19 @@ class InventoryMenu(pygame.sprite.Sprite):
         
     def input(self) -> None:
         #set flags to use for preventing code from running repeatedly with key presses
+
+        def _update_item_window(slot)->None:
+            if slot is not None and slot.subject is not None:
+                self.item_stats_display.item_name_display.text =f"Name : {slot.subject.name}"
+                self.item_stats_display.item_value_display.text = f'Value : {str(slot.subject.stats["value"])}'
+                self.item_stats_display.item_description_line1.text = slot.subject.stats['description1']
+                self.item_stats_display.item_description_line2.text = slot.subject.stats['description2']
+            else:
+                self.item_stats_display.item_name_display.text = ''
+                self.item_stats_display.item_value_display.text = ''
+                self.item_stats_display.item_description_line1.text =''
+                self.item_stats_display.item_description_line2.text =""
+
         single_press_keys = [pygame.K_b,
                              pygame.K_RETURN,
                              pygame.K_e,
@@ -167,29 +183,14 @@ class InventoryMenu(pygame.sprite.Sprite):
         if not pygame.mouse.get_pressed()[0]:
             self.clicking = False
 
-        #click based interaction
-        if (pygame.mouse.get_pressed()[0] and self.exit_button.collidepoint(mouse_pos) or keys[pygame.K_ESCAPE]):
-            self.exit()
-
-        #position based interaction
         for slot in self.all_slots:
             if slot.rect.collidepoint(mouse_pos):
-                if slot.subject:
-                    self.item_stats_display.item_name_display.text =f"Name : {slot.subject.name}"
-                    self.item_stats_display.item_value_display.text = f'Value : {str(slot.subject.stats["value"])}'
-                    self.item_stats_display.item_description_line1.text = slot.subject.stats['description1']
-                    self.item_stats_display.item_description_line2.text = slot.subject.stats['description2']
-                elif not slot.subject:
-                    self.item_stats_display.item_name_display.text = ''
-                    self.item_stats_display.item_value_display.text = ''
-                    self.item_stats_display.item_description_line1.text =''
-                    self.item_stats_display.item_description_line2.text =""
+                _update_item_window(slot)
+                if pygame.mouse.get_pressed()[0] and not self.clicking and self.is_sole_operating:
+                    slot.click()
+                    self.clicking = True
             elif not any(slot.rect.collidepoint(mouse_pos) for slot in self.all_slots):
-                self.item_stats_display.item_name_display.text = '' 
-                self.item_stats_display.item_value_display.text =''
-                self.item_stats_display.item_description_line1.text = ''
-                self.item_stats_display.item_description_line2.text =""
-
+                _update_item_window(None)
         #key based interaction
         if not self.key_pressed and keys[pygame.K_ESCAPE] and self.is_active:
             self.owner.overlay.position_crew_icons(self.crew_list)
@@ -217,5 +218,22 @@ class InventoryMenu(pygame.sprite.Sprite):
         for item in self.menu_ui:
             self.group.remove(item)  #stop showing anything on the screen
         self.is_active = False
+        self.is_sole_operating = True
+        self.sidebar.exit()
         self.owner.resume_timers()
-    
+
+    def sort_inventory(self, sort_type='alphabetical', reversed=False) -> None:
+        if sort_type == 'alphabetical':
+            self.owner.inventory = sorted(self.owner.inventory, key=lambda item:item.name)
+            self.menu_refresh()
+
+    def drop_item(self) -> None:
+        for slot in self.all_slots:
+            if slot.selected:
+                self.owner.inventory.remove(slot.subject)
+                slot.click(toggle=0)
+        self.menu_refresh()
+
+    def setup_trading(self) -> list:
+        self.is_sole_operating = False
+        return self.all_slots

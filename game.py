@@ -26,7 +26,6 @@ class Level:
 
     def setup(self) -> None:
         """Initialize major game assets"""
-        
         #Initialize the player and assets
         self.player = Ship(self, self.draw_groups, 'galleon')
         self.event_handler = EventHandler(self.player)

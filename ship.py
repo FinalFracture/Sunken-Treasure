@@ -10,9 +10,11 @@ class Ship(All_Characters):
         self.game = game
         self.groups = groups
         self.inventory_ui = InventoryMenu(groups['overlay'], self, (5, 15))
+        self.inventory_ui.sidebar.make_button({'name':'Drop', 'func':self.inventory_ui.drop_item})
+        self.inventory_ui.sidebar
         self.overlay = Overlay(groups['overlay'], self)
         self.gps_coord = (0,0)
-        self.speed = 80
+        self.speed = 80 
         self.knotical_speed = 0
         self.gold = 0
         self.overlay.position_crew_icons(self.crew_list)

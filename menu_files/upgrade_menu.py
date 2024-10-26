@@ -1,7 +1,7 @@
 import pygame
 from pygame.sprite import Sprite
 from SETTINGS import *
-from sprite_files.sprites import Textbox
+from sprite_files.hud import Textbox
 from sprite_files.hud import UpgradeIconBg
 
 class UpgradeMenu(Sprite):

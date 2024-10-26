@@ -1,6 +1,6 @@
 import pygame
 import random
-from .sprites import DialogBox
+from .hud import DialogBox
 from support import import_folder
 from timer import Timer
 from SETTINGS import *
@@ -10,7 +10,7 @@ from sprite_files.items import Crew
 
 class All_Characters(pygame.sprite.Sprite):
     """This class will provide identical shared mechanics that all vessels will use"""
-    def __init__(self, groups, starting_pos:tuple, ship_type:str):
+    def __init__(self, groups:pygame.sprite.Group, starting_pos:tuple, ship_type:str):
         super().__init__(groups['all'])
         self.display_groups = groups
         self.z = cameragroup_layers['main']
@@ -38,12 +38,12 @@ class All_Characters(pygame.sprite.Sprite):
         
     def _general_setup(self):
         #stats setup
-        self.gold = 50
-        self.inventory = []
-        self.timers = {}
-        self.crew_list = [Crew(self.display_groups['overlay'], 'rockhound',owner=self), Crew(self.display_groups['overlay'], 'angler',owner=self)] # all characters start with an angler for now
-        self.tools = {}
-        self.animations = {'left': [], 'right': []}
+        self.gold:int = 50
+        self.inventory:list = []
+        self.timers:dict = {}
+        self.crew_list:list = [Crew(self.display_groups['overlay'], 'rockhound',owner=self), Crew(self.display_groups['overlay'], 'angler',owner=self)] # all characters start with an angler for now
+        self.tools:dict = {}
+        self.animations:dict = {'left': [], 'right': []}
         for crew in self.crew_list:
             for tool_name, tool in crew.tool.items():
                 self.tools[tool_name] = tool
@@ -158,8 +158,6 @@ class NonPlayerCharacter(All_Characters):
         self._npc_setup(groups)
         self.dialog_box = DialogBox(groups
                                     ,self
-                                    ,random.choice(self.crew_list)
-                                    ,self.image
                                     )
 
     def _npc_setup(self, groups):

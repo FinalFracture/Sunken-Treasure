@@ -18,7 +18,6 @@ class BoatShop(NonPlayerCharacter):
         self.inventory_ui = InventoryMenu(display_group['overlay'], self, (600, 15))
         self.trade_ui = TradeMenu(display_group['overlay'], self)
         super().__init__(display_group, starting_pos = self.starting_pos, ship_type=self.ship_type)
-        #self.tools['fishing_pole'].base_catch_rate = 0.15
 
         #inventory management setup
         self.gold = 100

@@ -1,18 +1,17 @@
 import pygame
-from sprite_files.hud import UiButton
-from sprite_files.sprites import Textbox, Generic
+from sprite_files.hud import Textbox, UiButton
 from SETTINGS import *
 
 
 class TradeMenu(pygame.sprite.Sprite):
-    def __init__(self, group, owner) -> None:
+    def __init__(self, group:pygame.sprite.Group, owner:pygame.sprite.Sprite) -> None:
         super().__init__(group)
-        self.group= group
-        self.is_active = False
-        self.buy_cart = []
-        self.sell_cart = []
-        self.z = overlay_layers['menu']
-        self.owner = owner
+        self.group:pygame.sprite.Group = group
+        self.is_active:bool = False
+        self.buy_cart:list = []
+        self.sell_cart:list = []
+        self.z:int = overlay_layers['menu']
+        self.owner:pygame.sprite.Sprite = owner
         self._menu_setup()
         self.group.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
 
@@ -23,24 +22,48 @@ class TradeMenu(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(centerx=screen_width/2, bottom=screen_height)
 
         #items to display setup
-        self.buy_button_image = pygame.image.load('images/hud/buy_button.png')
-        self.sell_button_image = pygame.image.load('images/hud/sell_button.png')
-        self.exit_button_image = pygame.image.load('images/hud/exit_button.png')
-        self.buy_button = UiButton(self.group, self.buy_button_image, self.rect, (403,22))
-        self.sell_button = UiButton(self.group, self.sell_button_image, self.rect, (39,22))
-        self.exit_button = UiButton(self.group, self.exit_button_image, self.rect, (211, 13))
-        self.gold_textbox = Textbox(self.group, self, offset=(239, 55))
-        self.menu_ui = [self, self.gold_textbox, self.buy_button, self.sell_button, self.exit_button]
+        self.buy_button:UiButton = UiButton(self.group, button_text='Buy', button_func=self._buy, refrence_rect=self.rect, topleft_offset=(403,22))
+        self.sell_button:UiButton = UiButton(self.group, button_text='Sell', button_func=self._sell, refrence_rect=self.rect, topleft_offset=(39,22))
+        self.gold_textbox:Textbox = Textbox(self.group, self, offset=(239, 55), position='relative')
+        self.buttons:list[UiButton] = [self.buy_button, self.sell_button]
+        self.temp_buttons:list[UiButton] = []
+        self.menu_ui:list = [self, self.buy_button, self.sell_button, self.gold_textbox]
 
     def show_menu(self, interactor) -> None:
         self.interactor = interactor
         self.transactable_spaces = []
-        self.transactable_spaces.extend(self.owner.inventory_ui.inventory_slots.values())
-        self.transactable_spaces.extend(self.owner.inventory_ui.crew_slots.values())        
-        self.transactable_spaces.extend(self.interactor.inventory_ui.inventory_slots.values())
-        self.transactable_spaces.extend(self.interactor.inventory_ui.crew_slots.values())
+        self.transactable_spaces.extend(self.owner.inventory_ui.setup_trading())
+        self.transactable_spaces.extend(self.interactor.inventory_ui.setup_trading())
+ 
+        self._setup_trade_buttons('start')
         for element in self.menu_ui:
             self.group.add(element)
+
+    def _setup_trade_buttons(self, setup_type:str) ->None:
+        """
+        Configure ui buttons for starting or ending a trade situation.
+
+        Args:
+            setup_type(str): determines what buttons to take or give back to the systems.
+
+                -"start": add buy and sell buttons, while removing the drop button
+
+                -"end": remove buy and sell buttons, give back the drop button
+        """
+        if setup_type == 'start':
+            for button in self.interactor.inventory_ui.sidebar.active_buttons:
+                if button.name == 'Drop':
+                    self.temp_buttons.append(button)
+                    self.interactor.inventory_ui.sidebar.active_buttons.remove(button)
+            self.interactor.inventory_ui.sidebar.active_buttons.append(self.sell_button)
+            self.owner.inventory_ui.sidebar.active_buttons.append(self.buy_button)
+        elif setup_type == 'end':
+            self.interactor.inventory_ui.sidebar.active_buttons.remove(self.sell_button)
+            self.interactor.inventory_ui.sidebar.active_buttons.extend(self.temp_buttons)
+            self.owner.inventory_ui.sidebar.active_buttons.remove(self.buy_button)
+            self.temp_buttons.clear()
+        self.owner.inventory_ui.sidebar.update_buttons()
+        self.interactor.inventory_ui.sidebar.update_buttons()
 
     def update(self, dt) -> None:
         self._update_text()
@@ -76,14 +99,9 @@ class TradeMenu(pygame.sprite.Sprite):
         if not pygame.mouse.get_pressed()[0]:
             self.clicking = False
 
-        if pygame.mouse.get_pressed()[0] and self.exit_button.rect.collidepoint(self.mouse_pos):
-            self.exit()
-
-        if (pygame.mouse.get_pressed()[0] and self.sell_button.rect.collidepoint(self.mouse_pos)):
-            self._sell()
-        
-        if (pygame.mouse.get_pressed()[0] and self.buy_button.rect.collidepoint(self.mouse_pos)):
-            self._buy()
+        for button in self.buttons:
+            if button.rect.collidepoint(self.mouse_pos) and pygame.mouse.get_pressed()[0]:
+                button.click()
 
         #add items to carts    
         for item_slot in self.transactable_spaces:
@@ -154,6 +172,7 @@ class TradeMenu(pygame.sprite.Sprite):
     def exit(self) -> None:
         self.buy_cart.clear()
         self.sell_cart.clear()
+        self._setup_trade_buttons('end')
         self.interactor.inventory_ui.exit()
         self.owner.inventory_ui.exit()
         self.is_active = False

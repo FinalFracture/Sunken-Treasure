@@ -62,8 +62,7 @@ class FishingPole(Tool):
                 self.owner.inventory.append(find)
                 self._animate_a_find(find, dt)
             self.frame_counter = 0
-        for timer in self.timers.values():
-            timer.update()
+        self._update_timers()
 
     def _determine_find_rate(self):
         #look at factors that should change find rate for fishing, and then alter the rate
@@ -84,7 +83,6 @@ class FishingPole(Tool):
             for i in range(round(multiplier)):
                 possible_finds.append(fish)
         return possible_finds
-
 
 class Fish(pygame.sprite.Sprite):
     """Managing class for the fish itself. recieve """
