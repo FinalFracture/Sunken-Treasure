@@ -4,7 +4,7 @@ from .hud import DialogBox
 from support import import_folder
 from timer import Timer
 from SETTINGS import *
-from sprite_files.items import Crew
+from actions.crew import Crew
 
 
 

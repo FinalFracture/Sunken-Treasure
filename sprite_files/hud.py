@@ -96,9 +96,10 @@ class Icon_bg(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = pos)
         self.subject = subject
         self.z = z
-        self.indicator = None
-        self.selected:bool = False 
+        self.indicator:bool = None
         self.value_display = Textbox(group, self, fontsize= 8, z=overlay_layers['text'])
+        self.indicator:MenuIndicator = MenuIndicator(self.group, self.rect)
+        self.group.remove(self.indicator)
 
     def update(self, dt): 
         if self.subject:
@@ -108,26 +109,21 @@ class Icon_bg(pygame.sprite.Sprite):
         else:
             #remove the value display from the display group
             self.value_display.text=''
-            
-    def deselect(self):
-        #this will be called any time we need the inventory item to be deselected by any process
-        if self.indicator:
-            self.indicator.kill()
-        self.selected = False
     
     def click(self, toggle=None):
         #define what happens when the mouse clicks while in the rect boundary of an icon bg.
         if toggle == 0:
-            self.deselect()
+            self.indicator.de_indicate()
+            if self.subject is not None:
+                self.subject.selected = False
         elif toggle == 1:
-            self.indicator = MenuIndicator(self.group, self.rect)
-            self.selected = True
+            self.subject.selected = True
+            self.indicator.indicate()   
         else:
-            if self.subject and not self.selected:
-                self.indicator = MenuIndicator(self.group, self.rect)
-                self.selected = True
-            elif self.subject and self.selected:
-                self.deselect()
+            if self.subject is not None and not self.subject.selected:
+                self.click(toggle=1)
+            elif self.subject is not None and self.subject.selected:
+                self.click(toggle=0)
 
 class UpgradeIconBg(pygame.sprite.Sprite):
     def __init__(self, group, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
@@ -175,12 +171,21 @@ class MenuIndicator(pygame.sprite.Sprite):
     def __init__(self, group, owning_rect, z = overlay_layers['menu_aux']):
         super().__init__(group)
         self.z = z
+        self.group = group
+        self.reference_rect = owning_rect
         self.image = pygame.Surface((owning_rect.width, owning_rect.height))
         self.rect = self.image.get_rect()
         self.rect.width = self.rect.width + 6
         self.rect.height = self.rect.height + 6
         self.rect.center = owning_rect.center
         self.image.fill(color='Green')
+
+    def indicate(self) -> None:
+        self.group.add(self)
+        self.rect.center = self.reference_rect.center
+
+    def de_indicate(self) -> None:
+        self.group.remove(self)
 
 class HoverMessage(pygame.sprite.Sprite):
     """This class is a message that displays at its specified coords. it is uninteractable."""

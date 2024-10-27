@@ -2,9 +2,9 @@ import pygame
 import random
 from SETTINGS import *
 from npc_dialog_trees import boat_shop_dialog
-from menu_files.trade_menu import TradeMenu
-from menu_files.Inventory_menu import InventoryMenu
-from sprite_files.items import *
+from menus.trade_menu import TradeMenu
+from menus.Inventory_menu import InventoryMenu
+from actions.crew import *
 from sprite_files.characters import NonPlayerCharacter
 
 class BoatShop(NonPlayerCharacter):

@@ -1,5 +1,5 @@
 import pygame
-from sprite_files.hud import Textbox, UiButton
+from sprite_files.hud import Textbox, UiButton, Icon_bg
 from SETTINGS import *
 
 
@@ -32,9 +32,6 @@ class TradeMenu(pygame.sprite.Sprite):
 
     def show_menu(self, interactor) -> None:
         self.interactor = interactor
-        self.transactable_spaces.extend(self.owner.inventory_ui.setup_trading())
-        self.transactable_spaces.extend(self.interactor.inventory_ui.setup_trading())
- 
         self._setup_trade_buttons('start')
         for element in self.menu_ui:
             self.group.add(element)
@@ -66,7 +63,6 @@ class TradeMenu(pygame.sprite.Sprite):
         self.interactor.inventory_ui.sidebar.update_buttons()
 
     def update(self, dt) -> None:
-        self._update_text()
         self._input()
      
     def _input(self) -> None:
@@ -78,20 +74,9 @@ class TradeMenu(pygame.sprite.Sprite):
     def _key_based_input(self, keys) -> None:
         if not keys[pygame.K_b or pygame.K_RETURN or pygame.K_e or pygame.K_u or pygame.K_a or pygame.K_d]:
             self.key_pressed = False
-        
-        if not keys[pygame.K_LCTRL]:
-            self.selecting_all_of_type = False
 
         if not self.key_pressed and keys[pygame.K_ESCAPE]:
             self.exit()
-            self.key_pressed = True
-
-        if not self.key_pressed and keys[pygame.K_LCTRL]:
-            self.key_pressed = True
-            self.selecting_all_of_type = True
-
-        if keys[pygame.K_a] or keys[pygame.K_d]:
-            self._ui_update()
             self.key_pressed = True
 
     def _click_based_input(self) -> None:
@@ -104,27 +89,33 @@ class TradeMenu(pygame.sprite.Sprite):
                 button.click()
 
         #add items to carts    
-        for item_slot in self.transactable_spaces:
-            if item_slot.rect.collidepoint(self.mouse_pos) and pygame.mouse.get_pressed()[0]:
-                if item_slot.subject and not self.clicking:
-                    if item_slot.subject in self.owner.inventory and not self.clicking and item_slot.subject not in self.buy_cart:
-                        self.buy_cart.append(item_slot.subject)
-                    elif item_slot.subject in self.interactor.inventory and not self.clicking and item_slot.subject not in self.sell_cart:
-                        self.sell_cart.append(item_slot.subject)
-                    elif item_slot.subject in self.sell_cart and not self.clicking:
-                        self.sell_cart.remove(item_slot.subject)
-                    elif item_slot.subject in self.buy_cart and not self.clicking:
-                        self.buy_cart.remove(item_slot.subject)
-                    self.clicking = True
-                    self._ui_update()
+        if pygame.mouse.get_pressed()[0] and not self.clicking:
+            self.clicking = True
+            self._ui_update()
+        if pygame.mouse.get_pressed()[2]:
+            self._ui_update()
     
     def _ui_update(self) -> None:
         self.owner.inventory_ui.menu_refresh()
         self.interactor.inventory_ui.menu_refresh()
-        for slot in self.transactable_spaces:
-            slot.click(toggle=0)
-            if slot.subject in (self.sell_cart+self.buy_cart):
-                slot.click()
+        self._update_carts()
+
+    def _update_carts(self) -> None:
+        interactor_subjected_slots:list[Icon_bg] = [slot for slot in self.interactor.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+        owner_subjected_slots:list[Icon_bg] = [slot for slot in self.owner.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+
+        for slot in interactor_subjected_slots:
+            if slot.subject.selected and slot.subject not in self.sell_cart:
+                self.sell_cart.append(slot.subject)
+            elif not slot.subject.selected and slot.subject in self.sell_cart:
+                self.sell_cart.remove(slot.subject)
+
+        for slot in owner_subjected_slots:
+            if slot.subject.selected and slot.subject not in self.buy_cart:
+                self.buy_cart.append(slot.subject)
+            elif not slot.subject.selected and slot.subject in self.buy_cart:
+                self.buy_cart.remove(slot.subject)
+        self._update_text()
 
     def _refresh(self) -> None:
         self._ui_update()
@@ -139,6 +130,7 @@ class TradeMenu(pygame.sprite.Sprite):
                 self.interactor.gold += item.value
                 self.interactor.inventory.remove(item)
                 self.owner.inventory.insert(0,item)
+                item.selected=False
         self._refresh()
             
     def _buy(self) -> None: 
@@ -149,6 +141,7 @@ class TradeMenu(pygame.sprite.Sprite):
                 self.owner.gold += item.value
                 self.owner.inventory.remove(item)
                 self.interactor.inventory.insert(0,item)
+                item.selected=False
             self._refresh()
 
     def _update_text(self) -> None:

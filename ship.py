@@ -2,7 +2,7 @@ import pygame
 from SETTINGS import * 
 from sprite_files.characters import All_Characters
 from sprite_files.hud import Overlay
-from menu_files.Inventory_menu import InventoryMenu
+from menus.Inventory_menu import InventoryMenu
 
 class Ship(All_Characters): 
     def __init__(self, game, groups, ship_type):

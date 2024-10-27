@@ -2,28 +2,7 @@ import pygame
 import random
 from SETTINGS import *
 from support import import_folder
-from actions import Tool
-
-
-
-mineral_stats = {
-            'slate': {
-                    'image': []
-                    ,'value': 4
-                    ,'weight': 8
-                    ,'rarity': 'Common' 
-                    ,'description1': 'Flat stone pieces.'
-                    ,'description2': 'Can contain fossils.'
-                }
-            ,'sandstone': {
-                    'image': []
-                    ,'value': 2
-                    ,'weight': 5
-                    ,'rarity': 'Common' 
-                    ,'description1': 'Coarse brittle rock.'
-                    ,'description2': 'Absorbs water well.'
-                }
-}
+from actions import Tool, GameItem
 
 class Pickaxe(Tool):
     def __init__(self, group, owner, crew):
@@ -32,14 +11,14 @@ class Pickaxe(Tool):
         
     def use(self, dt) -> None:
         """every 4 seconds, roll " a dice" to see if you find a fish"""
-        mineral = 'sandstone'
+        mineral_name = 'sandstone'
         self.frame_counter += 1 * dt
         self.timers['using'].activate()
         if self.frame_counter > 4:
             self._determine_find_rate()
             success_check = random.random()
             if success_check <= self.find_rate:
-                find = Mineral(self.group, mineral)
+                find = GameItem(self.group, 'mineral', mineral_name )
                 self.owner.inventory.append(find)
                 self._animate_a_find(find, dt)
             self.frame_counter = 0
@@ -57,19 +36,3 @@ class Pickaxe(Tool):
                 self.find_rate_modifiers['crew'] = member.stats['tool_modifier']
         self.find_rate = self.base_find_rate + sum(values for values in self.find_rate_modifiers.values())
 
-class Mineral(pygame.sprite.Sprite):
-    """Managing class for the fish itself. recieve """
-    def __init__(self, group, item_name, z = cameragroup_layers['items']):
-        super().__init__(group)
-        self.name = item_name 
-        self.stats = mineral_stats[self.name]
-        self.import_assets()
-        self.image = self.stats['image'][0]
-        self.rect = self.image.get_rect()
-        self.z = z
-        group.remove(self)
-        self.value = self.stats['value']
-            
-    def import_assets(self):
-            full_path = 'images/items/minerals/' + self.name
-            self.stats['image'] = import_folder(full_path)

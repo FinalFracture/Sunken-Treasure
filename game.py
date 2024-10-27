@@ -4,8 +4,7 @@ from input_manager import EventHandler
 from ship import Ship
 from shop import BoatShop
 from npcs import NPCGenerator
-from sprite_files.items import Crew
-from item_stat_dicts import items_init
+from actions import items_init
 
 class Level:
     """The main game loop. Highest level logic"""
