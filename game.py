@@ -4,7 +4,9 @@ from input_manager import EventHandler
 from ship import Ship
 from shop import BoatShop
 from npcs import NPCGenerator
+from maps import Map
 from actions import items_init
+
 
 class Level:
     """The main game loop. Highest level logic"""
@@ -29,14 +31,15 @@ class Level:
         self.player = Ship(self, self.draw_groups, 'galleon')
         self.event_handler = EventHandler(self.player)
         self.npc_generator = NPCGenerator()
+        self.active_map = Map(self.all_sprites, self.collision_group, 'maps/Map1.tmx')
 
         # npc's needs a generating function/logic to get rid of this awful list idea. Next important move i guess
-        self.interactables = [BoatShop(self.draw_groups, 'raft'), self.npc_generator.generate_npc(self.draw_groups, 'sloop')]
+        self.interactables = [] # [BoatShop(self.draw_groups, 'raft'), self.npc_generator.generate_npc(self.draw_groups, 'sloop')]
         
         #lists and dicts
         self.game_state = 'normal'
         self.dialoge_boxes = [npc.dialog_box for npc in self.interactables if npc.dialog_box]
-        self.pause_overworld_ui_list = [self.player.inventory_ui, self.interactables[0].inventory_ui]
+        self.pause_overworld_ui_list = [self.player.inventory_ui, *[item.inventory_ui for item in self.interactables]]
         self.maps = []
 
     def run(self, dt):

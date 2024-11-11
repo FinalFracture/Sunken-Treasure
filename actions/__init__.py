@@ -5,7 +5,7 @@ from sprite_files.hud import Generic
 from support import import_folder
 from SETTINGS import *
 
-item_stats:dict[dict] = {'fish':{
+item_stats:dict[str:dict] = {'fish':{
                     'tuna': {
                     'image': []
                     ,'value': 250
@@ -39,7 +39,7 @@ item_stats:dict[dict] = {'fish':{
                 ,'description2':'are an invasive species.'
             }
                     }
-            ,'mineral':{
+            ,'minerals':{
                     'slate': {
                     'image': []
                     ,'value': 4
@@ -487,8 +487,16 @@ def _import_crew_assets():
       full_path = 'images/crew/' + role +'/' + status
       crew_stat_dict[status] = import_folder(full_path)
 
+def _import_gameitem_assets() -> None:
+   for type_name, item_type in item_stats.items():   
+      if type_name != 'crew':
+         for item_name,  gameitem in item_type.items():
+            full_path = f'images/items/{type_name}/{item_name}'
+            gameitem['image'] = import_folder(full_path)
+    
 def items_init():
   _import_crew_assets()
+  _import_gameitem_assets()
 
 class Tool:
     def __init__(self, group, owner, crew):
@@ -523,15 +531,15 @@ class GameItem(sprite.Sprite):
         self.selected:bool = False
         self.stats:dict = item_stats[self.item_type][self.item_name].copy()
         self.name:str = item_name
-        self._import_assets()
         self.image:Surface = self.stats['image'][0]
         self.rect:Rect = self.image.get_rect()
         self.z:int = z
         group.remove(self)
         self.value = self.stats['value']
             
-    def _import_assets(self):
-            full_path = f'images/items/{self.item_type}/{self.item_name}'
-            self.stats['image'] = import_folder(full_path)
-
-__all__=['item_stats', 'Tool', 'GameItem', 'items_init', 'generate_tool_modifier', 'generate_name']
+__all__=['item_stats'
+        ,'Tool'
+        ,'GameItem'
+        ,'items_init'
+        ,'generate_tool_modifier'
+        ,'generate_name']

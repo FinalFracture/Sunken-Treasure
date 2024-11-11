@@ -51,13 +51,13 @@ class All_Characters(pygame.sprite.Sprite):
         
     def _image_setup(self):
         #self image and rect
-        self.image = self.animations[self.status][self.frame_index]
-        self.rect = self.image.get_rect()
+        self.image:pygame.surface.Surface = self.animations[self.status][self.frame_index]
+        self.rect:pygame.rect.Rect = self.image.get_rect()
         self.rect.center = (self.starting_pos)
 
         #hitbox
         self.hitbox = self.rect
-        self.hitbox.height = self.rect.height*.75
+        self.hitbox.height = self.rect.height*0.75
         self.hitbox.top = self.rect.top
 
         #player indicator image and rect
@@ -93,24 +93,43 @@ class All_Characters(pygame.sprite.Sprite):
             timer.pause()
 
     def _check_collisions(self):
-        #detect a colision, and put the player at a position where it is not coliding. 
-        collisions = pygame.sprite.spritecollide(self, self.display_groups['collision'], False)
-        if collisions:
-            for collided_object in collisions:
-                if collided_object != self:
-                    if self.hitbox.left > collided_object.rect.centerx:
-                        if self.direction.x < 0:
-                            self.direction.x = 0
-                    elif self.hitbox.right < collided_object.rect.centerx:
-                        if self.direction.x > 0:
-                            self.direction.x = 0
-                    if self.hitbox.top > collided_object.rect.centery:
-                        if self.direction.y < 0:
-                            self.direction.y = 0
-                    elif self.hitbox.bottom < collided_object.rect.centery:
-                        if self.direction.y > 0:
-                            self.direction.y = 0
+        #detect a colision, and put the player at a position where it is not coliding.
+        def _block_movement(collided_points:list[str]) -> None:
+            if 'topcenter' in collided_points and ('topleft' in collided_points or 'topright' in collided_points):
+                if self.direction.y < 0:
+                    self.direction.y = 0
+            if 'middleleft' in collided_points and ('topleft' in collided_points or 'bottomleft' in collided_points):
+                if self.direction.x < 0:
+                    self.direction.x = 0
+            if 'middleright' in collided_points and ('bottomright' in collided_points or 'topright' in collided_points):
+                if self.direction.x > 0:
+                    self.direction.x = 0
+            if 'bottomcenter' in collided_points and ('bottomright' in collided_points or 'bottomleft' in collided_points):
+                if self.direction.y > 0:
+                    self.direction.y = 0
 
+
+        collision_points:dict[str,pygame.Vector2] = {
+                                 'topleft':pygame.Vector2(self.hitbox.left, self.hitbox.top)
+                                 ,'topcenter':pygame.Vector2(self.hitbox.centerx, self.hitbox.top)
+                                 ,'topright':pygame.Vector2(self.hitbox.right, self.hitbox.top)
+                                 ,'middleleft':pygame.Vector2(self.hitbox.left, self.hitbox.centery)
+                                 ,'middleright':pygame.Vector2(self.hitbox.right, self.hitbox.centery)
+                                 ,'bottomleft':pygame.Vector2(self.hitbox.left, self.hitbox.bottom)
+                                 ,'bottomcenter':pygame.Vector2(self.hitbox.centerx, self.hitbox.bottom)
+                                 ,'bottomright':pygame.Vector2(self.hitbox.right, self.hitbox.bottom)
+                                }
+        colliding_objects:list[pygame.sprite.Sprite] = pygame.sprite.spritecollide(self, self.display_groups['collision'], False)
+        colliding_objects.remove(self)
+        collisions:list = []
+        for collided_object in colliding_objects:
+            for point_name, point in collision_points.items():
+                if collided_object.rect.collidepoint(point):
+                    collisions.append(point_name)
+        _block_movement(collisions)
+
+                
+        
     def _get_status(self, dt): 
         """Check for an interaction, tool use, or menu useage"""
 

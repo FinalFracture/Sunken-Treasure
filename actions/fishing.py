@@ -1,6 +1,7 @@
 import random
 import pygame
 from actions import Tool, GameItem, item_stats
+from maps import MapTile
 from SETTINGS import *
 
 
@@ -8,7 +9,7 @@ class FishingPole(Tool):
     def __init__(self, group, owner, crew):
         super().__init__(group, owner, crew)
         self.name = 'fishingpole'
-        self.catch_interval = 0.5
+        self.catch_interval = 4
         self.find_list = ['tuna',
                        'carp',
                        'salmon',
@@ -32,7 +33,7 @@ class FishingPole(Tool):
     def _determine_find_rate(self):
         #look at factors that should change find rate for fishing, and then alter the rate
         if self.owner.moving == False:
-            self.find_rate_modifiers['movement'] = 0.7
+            self.find_rate_modifiers['movement'] = 0.1
         else:
             self.find_rate_modifiers['movement'] = 0
 
@@ -43,7 +44,19 @@ class FishingPole(Tool):
 
     def _determine_finds(self) -> list[str]:
         possible_finds = []
-        for fish in self.find_list:
+        find_list = self.find_list[:]
+        map_mods:None | list[str] = MapTile.get_tile_fishing_mod(self.owner)
+        if map_mods is not None:
+            for fish in map_mods:
+                if fish[0] == '-':
+                    try:
+                        find_list.remove(fish[1:])
+                    except ValueError:
+                        continue
+                else:
+                    find_list.append(fish)
+            
+        for fish in find_list:
             multiplier = 100/(1+0.09*item_stats['fish'][fish]['value'])
             for i in range(round(multiplier)):
                 possible_finds.append(fish)
