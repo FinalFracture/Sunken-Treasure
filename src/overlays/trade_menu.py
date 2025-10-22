@@ -1,0 +1,174 @@
+import pygame
+from src.overlays.screen_components import Textbox, UiButton, Icon_bg
+from src.utils.settings import *
+from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers
+
+
+class TradeMenu(pygame.sprite.Sprite):
+    def __init__(self, owner:pygame.sprite.Sprite) -> None:
+        super().__init__(overlay_sprites)
+        self.is_active:bool = False
+        self.buy_cart:list = []
+        self.sell_cart:list = []
+        self.z:int = overlay_layers['menu']
+        self.master:pygame.sprite.Sprite = owner
+        self._menu_setup()
+        overlay_sprites.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
+
+    def _menu_setup(self) -> None:
+        """set the position for each element of the menu and assign its logic"""
+        #menu setup
+        self.image = pygame.image.load('assets\images\hud/shop_bar.png')
+        self.rect = self.image.get_rect(centerx=screen_width/2, bottom=screen_height)
+
+        #items to display setup
+        self.buy_button:UiButton = UiButton(overlay_sprites, button_text='Buy', button_func=self._buy, refrence_rect=self.rect, topleft_offset=(403,22))
+        self.sell_button:UiButton = UiButton(overlay_sprites, button_text='Sell', button_func=self._sell, refrence_rect=self.rect, topleft_offset=(39,22))
+        self.gold_textbox:Textbox = Textbox(overlay_sprites, self, offset=(239, 55), position='relative')
+        self.buttons:list[UiButton] = [self.buy_button, self.sell_button]
+        self.temp_buttons:list[UiButton] = []
+        self.transactable_spaces = []
+        self.menu_ui:list = [self, self.buy_button, self.sell_button, self.gold_textbox]
+
+    def show_menu(self, interactor) -> None:
+        self.interactor = interactor
+        self._setup_trade_buttons('start')
+        for element in self.menu_ui:
+            overlay_sprites.add(element)
+
+    def _setup_trade_buttons(self, setup_type:str) ->None:
+        """
+        Configure ui buttons for starting or ending a trade situation.
+
+        Args:
+            setup_type(str): determines what buttons to take or give back to the systems.
+
+                -"start": add buy and sell buttons, while removing the drop button
+
+                -"end": remove buy and sell buttons, give back the drop button
+        """
+        if setup_type == 'start':
+            for button in self.interactor.inventory_ui.sidebar.active_buttons:
+                if button.name == 'Drop':
+                    self.temp_buttons.append(button)
+                    self.interactor.inventory_ui.sidebar.active_buttons.remove(button)
+            self.interactor.inventory_ui.sidebar.active_buttons.append(self.sell_button)
+            self.master.inventory_ui.sidebar.active_buttons.append(self.buy_button)
+        elif setup_type == 'end':
+            self.interactor.inventory_ui.sidebar.active_buttons.remove(self.sell_button)
+            self.interactor.inventory_ui.sidebar.active_buttons.extend(self.temp_buttons)
+            self.master.inventory_ui.sidebar.active_buttons.remove(self.buy_button)
+            self.temp_buttons.clear()
+        self.master.inventory_ui.sidebar.update_buttons()
+        self.interactor.inventory_ui.sidebar.update_buttons()
+
+    def update(self, dt) -> None:
+        self._input()
+     
+    def _input(self) -> None:
+        self.mouse_pos = pygame.mouse.get_pos()
+        keys = pygame.key.get_pressed()
+        self._click_based_input()
+        self._key_based_input(keys)
+
+    def _key_based_input(self, keys) -> None:
+        if not keys[pygame.K_b or pygame.K_RETURN or pygame.K_e or pygame.K_u or pygame.K_a or pygame.K_d]:
+            self.key_pressed = False
+
+        if not self.key_pressed and keys[pygame.K_ESCAPE]:
+            self.exit()
+            self.key_pressed = True
+
+    def _click_based_input(self) -> None:
+        #handle all click based interactions
+        if not pygame.mouse.get_pressed()[0]:
+            self.clicking = False
+
+        for button in self.buttons:
+            if button.rect.collidepoint(self.mouse_pos) and pygame.mouse.get_pressed()[0]:
+                button.click()
+
+        #add items to carts    
+        if pygame.mouse.get_pressed()[0] and not self.clicking:
+            self.clicking = True
+            self._ui_update()
+        if pygame.mouse.get_pressed()[2]:
+            self._ui_update()
+    
+    def _ui_update(self) -> None:
+        self.master.inventory_ui.menu_refresh()
+        self.interactor.inventory_ui.menu_refresh()
+        self._update_carts()
+
+    def _update_carts(self) -> None:
+        interactor_subjected_slots:list[Icon_bg] = [slot for slot in self.interactor.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+        owner_subjected_slots:list[Icon_bg] = [slot for slot in self.master.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+
+        for slot in interactor_subjected_slots:
+            if slot.subject.selected and slot.subject not in self.sell_cart:
+                self.sell_cart.append(slot.subject)
+            elif not slot.subject.selected and slot.subject in self.sell_cart:
+                self.sell_cart.remove(slot.subject)
+
+        for slot in owner_subjected_slots:
+            if slot.subject.selected and slot.subject not in self.buy_cart:
+                self.buy_cart.append(slot.subject)
+            elif not slot.subject.selected and slot.subject in self.buy_cart:
+                self.buy_cart.remove(slot.subject)
+        self._update_text()
+
+    def _refresh(self) -> None:
+        self._ui_update()
+        self.sell_cart = []
+        self.buy_cart = []
+
+    def _sell(self) -> None: 
+        #transact player inventory out, and into the shop inventory. then update the sprites
+        if self.master.gold >= sum(item.value for item in self.sell_cart):
+            for item in self.sell_cart:
+                self.master.gold -= item.value
+                self.interactor.gold += item.value
+                self.interactor.inventory.remove(item)
+                self.master.inventory.insert(0,item)
+                item.selected=False
+        self._refresh()
+            
+    def _buy(self) -> None: 
+        #transact player inventory out, and into the shop 
+        if self.interactor.gold >= sum(item.value for item in self.buy_cart):
+            for item in self.buy_cart:
+                self.interactor.gold -= item.value
+                self.master.gold += item.value
+                self.master.inventory.remove(item)
+                self.interactor.inventory.insert(0,item)
+                item.selected=False
+            self._refresh()
+
+    def _update_text(self) -> None:
+        #update any objects that have a dynamic text string that need to update once per frame. 
+        sell_cart_value = sum(item.value for item in self.sell_cart)
+        buy_cart_value = sum(item.value for item in self.buy_cart)
+        cart_value = sell_cart_value - buy_cart_value
+        self.gold_textbox.text = str(cart_value)
+        error_message = 'Missing Funds'
+        if int(cart_value) < 0 and self.interactor.gold - abs(int(cart_value)) < 0 :
+            error_message = 'Missing Funds'
+            self.gold_textbox.color = 'red'
+            self.gold_textbox.text = error_message
+        elif int(cart_value) == 0:
+            self.gold_textbox.color = 'black'
+        elif int(cart_value) < 0:
+            self.gold_textbox.color = 'red'
+        elif int(cart_value) > 0:
+            self.gold_textbox.color = 'dark green'
+
+    def exit(self) -> None:
+        self.buy_cart.clear()
+        self.sell_cart.clear()
+        self._setup_trade_buttons('end')
+        self.interactor.inventory_ui.exit()
+        self.master.inventory_ui.exit()
+        self.is_active = False
+        self.transactable_spaces.clear()
+        for element in self.menu_ui:
+            overlay_sprites.remove(element)

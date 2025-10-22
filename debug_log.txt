@@ -1,4 +1,2 @@
-
-Event handler startedame started
-                    Pygame initialized
-                    
+Game started
+Pygame initialized
