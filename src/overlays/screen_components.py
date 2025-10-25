@@ -35,7 +35,7 @@ class Overlay(pygame.sprite.Sprite):
             overlay_sprites.add(self.textboxes)
         self.gold.text = str(self.master.gold)
         self.bearing.text = (str(self.master.gps_coord))
-        self.storage.text = str(len(self.master.inventory))
+        self.storage.text = self.master.get_inv_level()
         self.knots.text = str(self.master.knotical_speed)
     
 
@@ -411,7 +411,7 @@ class Clipboard(pygame.sprite.Sprite):
         self.display_objects = []
         self.buttons = []
         self.active_buttons:list[UiButton] = []
-        self.make_button({'name':'Sort', 'func':self.master.sort_inventory})
+        self.make_button({'name':'Sort', 'func':self.master.reorder})
 
     def make_button(self, button_info:dict) -> None:
         button=UiButton(button_text=button_info['name'], button_func=button_info['func'], refrence_rect=self.rect, topleft_offset=(0,0))

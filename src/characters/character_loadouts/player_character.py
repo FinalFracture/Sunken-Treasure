@@ -3,7 +3,7 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
-from src.characters.character_loadouts import Character
+from src.characters.character_loadouts import Character, BOAT_STATS
 from src.overlays.character_sprites import Character_Sprite
 from src.overlays.screen_components import Overlay
 from src.overlays.Inventory_menu import InventoryMenu
@@ -13,7 +13,8 @@ class Player_Character(Character):
         super().__init__(ship_type)
         self.game = game
         self.sprite = Character_Sprite(self, starting_pos=(0,0), ship_type=ship_type)
-        self.inventory_ui = InventoryMenu(self, (5, 15))
+        self.stats = BOAT_STATS[ship_type]
+        self.inventory_ui = InventoryMenu(self, (5, 15), self.stats['max_inv_pages'], self.stats['crew_slots'])
         self.inventory_ui.sidebar.make_button({'name':'Drop', 'func':self.inventory_ui.drop_item})
         self.overlay = Overlay(self)
         self.timers = {}
@@ -89,7 +90,7 @@ class Player_Character(Character):
             if key_num > 0:
                 _activate_crew(key_num)
 
-        if any(keys[key] for key in EVENT_HANDLER.interaction_keys):
+        if any(keys[key] for key in EVENT_HANDLER.overworld_keys):
             if self.is_key_pressed == False:
                 _single_press_operations()
             self.is_key_pressed = True        
@@ -128,3 +129,12 @@ class Player_Character(Character):
         Timer.resume_all()
         self.overlay.position_crew_icons(self.crew_list)
             
+    def add_to_inventory(self, item):
+        return self.inventory_ui.add_to_inventory(item)
+
+    def get_inv_level(self) -> str:
+        """
+        Return an int as a string, representing the number of full inv_slots for the player"
+        """
+        return str(self.inventory_ui.full_slots)
+        

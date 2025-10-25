@@ -5,17 +5,17 @@ BOAT_STATS = {
     'galleon':{
         'speed':30,
         'crew_slots':6,
-        'cargo_pages':6
+        'max_inv_pages':6
     },
     'raft':{
         'speed':30,
         'crew_slots':2,
-        'cargo_pages':1
+        'max_inv_pages':1
     },
     'sloop':{
         'speed':50,
         'crew_slots':3,
-        'cargo_pages':2
+        'max_inv_pages':2
     }
 }
 
@@ -24,7 +24,6 @@ class Character():
     def __init__(self, ship_type):
         self.stats = BOAT_STATS[ship_type]
         self.gold:int = 50
-        self.inventory:list = []
         self.timers:dict = {}
         self.crew_list:list[Crew] = [Crew(crew_role='rockhound',owner=self), Crew(crew_role='angler',owner=self)] 
         self.active_crew:Crew = None

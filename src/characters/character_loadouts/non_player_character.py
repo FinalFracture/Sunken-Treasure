@@ -69,6 +69,8 @@ class Non_Player_Character(Character):
         
     def _get_tool_use(self) -> None:
         #roll a dice to determine if this ship will be fishing, wandering, etc.
+        pass
+    """
         if len(self.inventory) < 10:
             active_crew:Crew = random.choice(self.crew_list)
             active_crew.tool.use
@@ -76,6 +78,7 @@ class Non_Player_Character(Character):
         else:
             self.sprite.using_tool = False
             self.sprite.selected_tool = None
+        """
 
     def _get_movement_status(self) -> None:
         #just check for movment and change the self.movement flag

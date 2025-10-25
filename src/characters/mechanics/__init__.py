@@ -505,22 +505,25 @@ def items_init():
   _import_game_item_assets()
 
 class Tool:
-    def __init__(self, owner, crew):
+    def __init__(self, master, crew):
         self.base_find_rate = 0.1
-        self.master = owner
+        self.master = master
         self.crew = crew
         self.find_rate_modifiers = {}
         self.frame_counter = 0 # used to attempt a fish find every few seconds
         self.timers = {}# {'using':Timer(3000, ending_func = None)}
 
-    def _animate_a_find(self, caught_item):
-        current_find = Generic(all_sprites, self.master.sprite.status_rect.center, caught_item.image, z = cameragroup_layers['items'])
+    def retrieve(self, caught_item):
+        find_accepted:bool = self.master.add_to_inventory(caught_item) # bool to determine if there is inv space
 
-        def _move_up(dt):
-            current_find.rect.y -= 75 * EVENT_HANDLER.dt
-            
-        current_find.timers = {current_find:Timer(1250, running_func=_move_up, ending_func=current_find.kill)}
-        current_find.timers[current_find].activate()
+        if find_accepted == True:
+            current_find = Generic(all_sprites, self.master.sprite.status_rect.center, caught_item.image, z = cameragroup_layers['items'])
+        
+            def _move_up(dt):
+                current_find.rect.y -= 75 * EVENT_HANDLER.dt
+                
+            current_find.timers = {current_find:Timer(1250, running_func=_move_up, ending_func=current_find.kill)}
+            current_find.timers[current_find].activate()
 
 class GameItem(sprite.Sprite):
     def __init__(self, item_type:str, item_name:str, z=cameragroup_layers['items']) -> None:
