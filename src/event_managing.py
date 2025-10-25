@@ -10,14 +10,21 @@ class EventHandler:
             log_file.write(text)
         self.dt = 0.0
         self.anything = None
-        self.interaction_keys = [pygame.K_1, 
+        self.overworld_keys = [pygame.K_1, 
                         pygame.K_2, 
                         pygame.K_3, 
                         pygame.K_4, 
                         pygame.K_5, 
-                        pygame.K_6, 
+                        pygame.K_6,
+                        pygame.K_7,
+                        pygame.K_8,
+                        pygame.K_9, 
                         pygame.K_e, 
-                        pygame.K_LSHIFT,
+                        pygame.K_LSHIFT]
+        
+        self.menu_keys = [
+                        pygame.K_a,
+                        pygame.K_d,
                         pygame.K_ESCAPE]
 
     def run(self, input_function:callable) -> None:

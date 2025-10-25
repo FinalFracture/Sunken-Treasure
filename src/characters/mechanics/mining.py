@@ -17,8 +17,7 @@ class Pickaxe(Tool):
             success_check = random.random()
             if success_check <= self.find_rate:
                 find = GameItem(item_type='mineral', item_name=mineral_name)
-                self.master.inventory.append(find)
-                self._animate_a_find(find)
+                self.retrieve(find)
             self.frame_counter = 0
 
     def _determine_find_rate(self):

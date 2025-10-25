@@ -24,8 +24,7 @@ class FishingPole(Tool):
             success_check = random.random()
             if success_check <= self.find_rate:
                 find = GameItem('fish', random.choice(possible_finds))
-                self.master.inventory.append(find)
-                self._animate_a_find(find)
+                self.retrieve(find)
             self.frame_counter = 0
 
     def _determine_find_rate(self):
