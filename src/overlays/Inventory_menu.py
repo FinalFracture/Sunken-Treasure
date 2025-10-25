@@ -113,6 +113,7 @@ class InventoryMenu(pygame.sprite.Sprite):
 
         _clear_inventory_squares()
         _get_inv_page()
+        self.full_slots = len([slot for slot in self.all_slots if slot.subject is not None])
         if self.stop_showing == False:
             _show_inv_page()
             self.sidebar.update_buttons()
@@ -203,17 +204,18 @@ class InventoryMenu(pygame.sprite.Sprite):
                 all_items = sorted(all_items, key=lambda item: item.value)
 
         for index, slot in enumerate(self.all_slots):
+            slot.subject = None
             try:
                 slot.subject = all_items[index]
             except IndexError:
-                self.menu_refresh()
-                return
+                pass # skip ones with no subject
+        self.menu_refresh()
 
     def drop_item(self) -> None:
         for slot in self.all_slots:
             if slot.subject is not None and slot.subject.selected:
-                slot.subject = None
                 overlay_sprites.remove(slot.subject)
+                slot.subject = None
             slot.click(toggle=0)
         self.reorder()
     
