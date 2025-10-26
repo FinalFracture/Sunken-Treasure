@@ -1,6 +1,4 @@
 import pygame
-import math
-
 from src.characters.mechanics import GameItem
 from src.overlays.screen_components import Icon_bg, ItemStatBox, Clipboard
 from src.utils.settings import *
@@ -41,7 +39,7 @@ class InventoryMenu(pygame.sprite.Sprite):
                         slot_num += 1
                 self.inv_pages[page_num] = page 
                     
-        #menu setup
+        #inventory menu setup
         self.inv_page_index = 0
         self.inv_page_rows = 8
         self.inv_page_cols = 6
@@ -52,7 +50,25 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))
         self.item_stats_display = ItemStatBox(self.rect, (25,10))
-        self.sidebar = Clipboard((self.rect.right+15, self.rect.top), self)
+        
+        # clip board setup
+        buttons = {
+            'Sort-ABC':{
+                'function':self.reorder,
+                'args':'alphabetical'
+            },
+            'Drop':{
+                'function':self.drop_item,
+                'args':None
+            },
+            'Sort-$$$':{
+                'function':self.reorder,
+                'args':'value'
+            }
+        }
+        self.sidebar = Clipboard((self.rect.right+15, self.rect.top), self, buttons=buttons)
+
+        # crew menu setup
         self.crew_menu = CrewQuarters((self.rect.left, self.rect.bottom + 10), crew_slots)
 
         #items to display setup

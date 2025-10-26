@@ -62,13 +62,14 @@ class ItemStatBox(pygame.sprite.Sprite):
         self.ui_elements = [self.item_name_display, self.item_value_display, self.item_description_line1, self.item_description_line2]
 
 class UiButton(pygame.sprite.Sprite):
-    def __init__(self, button_text:str, button_func:callable, refrence_rect:pygame.Rect, topleft_offset:tuple[int,int], z=overlay_layers['menu_elements']):
+    def __init__(self, button_text:str, button_func:callable, func_arg, refrence_rect:pygame.Rect, topleft_offset:tuple[int,int], z=overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
         self.name = button_text
         self.image = self._image_setup()
         self.rect = self.image.get_rect(topleft = (refrence_rect.x + topleft_offset[0], refrence_rect.y + topleft_offset[1]))
         self.z = z
         self.function = button_func
+        self.arg = func_arg
         self.textboxes = [Textbox(self, text=button_text)]
 
     def update(self, dt) -> None:
@@ -88,7 +89,7 @@ class UiButton(pygame.sprite.Sprite):
         return image
 
     def click(self) -> None:
-        self.function()
+        self.function(self.arg)
 
 class Icon_bg(pygame.sprite.Sprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
@@ -401,7 +402,7 @@ class DialogBox(pygame.sprite.Sprite):
             self.ready_to_continue = True
 
 class Clipboard(pygame.sprite.Sprite):
-    def __init__(self, offset:tuple[int], owner:pygame.sprite.Sprite, z=overlay_layers['menu']) -> None:
+    def __init__(self, offset:tuple[int], owner:pygame.sprite.Sprite, z=overlay_layers['menu'], buttons=None) -> None:
         super().__init__(overlay_sprites)
         image_path = 'assets\images\hud/clipboard.png'
         self.image = pygame.image.load(image_path)
@@ -409,16 +410,18 @@ class Clipboard(pygame.sprite.Sprite):
         self.z = z
         self.master = owner
         self.display_objects = []
-        self.buttons = []
-        self.active_buttons:list[UiButton] = []
-        self.make_button({'name':'Sort', 'func':self.master.reorder})
+        self.buttons:list[UiButton] = []
+        self.make_buttons(buttons)
 
-    def make_button(self, button_info:dict) -> None:
-        button=UiButton(button_text=button_info['name'], button_func=button_info['func'], refrence_rect=self.rect, topleft_offset=(0,0))
-        self.display_objects.append(button)
-        self.buttons.append(button)
-        self.active_buttons.append(button)
-        overlay_sprites.remove(button)
+    def make_buttons(self, buttons:dict) -> None:
+        if buttons is not None:
+            for name, button in buttons.items():
+                func=button['function']
+                args=button['args']
+                button=UiButton(button_text=name, button_func=func, func_arg=args, refrence_rect=self.rect, topleft_offset=(0,0))
+                self.display_objects.append(button)
+                self.buttons.append(button)
+                overlay_sprites.remove(button)
 
     def update_buttons(self) -> None:
         def _set_position(index:int) -> tuple[int]:
@@ -436,20 +439,14 @@ class Clipboard(pygame.sprite.Sprite):
             top = self.rect.top + top_padding + ((top_padding + height) * row)
 
             return(left,top)
-        
-        for button in self.active_buttons:
-            if button not in self.buttons:
-                self.buttons.append(button)
 
-        for button in self.buttons:
-            if button in self.active_buttons:
-                offset = _set_position(self.active_buttons.index(button))
-                button.position(reference_rect=self.rect, offset=offset)
-                overlay_sprites.add(button)
-                for textbox in button.textboxes:
-                    textbox.set_position()
-            else:
-                overlay_sprites.remove(button)
+        for index, button in enumerate(self.buttons):
+            offset = _set_position(index)
+            button.position(reference_rect=self.rect, offset=offset)
+            overlay_sprites.add(button)
+            for textbox in button.textboxes:
+                textbox.set_position()
+
 
     def show(self) -> None:
         for item in self.display_objects:
@@ -461,7 +458,7 @@ class Clipboard(pygame.sprite.Sprite):
     def _input(self) -> None:
         mouse_pos = pygame.mouse.get_pos()
         if pygame.mouse.get_pressed()[0]:
-            for button in self.active_buttons:
+            for button in self.buttons:
                 if button.rect.collidepoint(mouse_pos):
                     button.click()
 
