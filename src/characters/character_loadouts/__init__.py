@@ -5,17 +5,17 @@ BOAT_STATS = {
     'galleon':{
         'speed':30,
         'crew_slots':6,
-        'max_inv_pages':6
+        'inv_pages':6
     },
     'raft':{
         'speed':30,
         'crew_slots':2,
-        'max_inv_pages':1
+        'inv_pages':1
     },
     'sloop':{
         'speed':50,
         'crew_slots':3,
-        'max_inv_pages':2
+        'inv_pages':2
     }
 }
 
