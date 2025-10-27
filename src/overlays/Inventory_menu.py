@@ -14,6 +14,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.z:int = overlay_layers['menu']
         self.master:pygame.sprite.Sprite = owner
         self.key_pressed:bool = False
+        self.interactable_slots:list[Icon_bg] = []
         self._menu_setup(top_left_pos, inv_pages, crew_slots)
         self.stop_showing = False
         overlay_sprites.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
@@ -85,7 +86,8 @@ class InventoryMenu(pygame.sprite.Sprite):
             self.is_active = True
             self.sidebar.show()
             if crew_list is not None:
-                self.crew_menu.show(crew_list)
+                self.interactable_slots.extend(self.crew_menu.show(crew_list))
+
             self.menu_refresh()
             for item in self.menu_ui:
                 overlay_sprites.add(item)
@@ -109,6 +111,10 @@ class InventoryMenu(pygame.sprite.Sprite):
             for slot in self.active_inv_page.values(): 
                 if slot.subject:
                     overlay_sprites.remove(slot.subject)
+            try:
+                self.interactable_slots.remove(self.active_inv_page.values())
+            except ValueError:
+                pass
 
         def _show_inv_page() -> None: 
             """assign each item an inventory slot"""
@@ -133,6 +139,7 @@ class InventoryMenu(pygame.sprite.Sprite):
 
         _clear_inventory_squares()
         _get_inv_page()
+        self.interactable_slots.extend(self.active_inv_page.values())
         self.full_slots = len([slot for slot in self.all_slots if slot.subject is not None])
         if self.stop_showing == False:
             _show_inv_page()
@@ -194,11 +201,11 @@ class InventoryMenu(pygame.sprite.Sprite):
         else:
             self.clicking = False
 
-        for slot in self.active_inv_page.values():
+        for slot in self.interactable_slots:
             if slot.rect.collidepoint(mouse_pos):
                 _update_item_window(slot)
 
-            elif not any(slot.rect.collidepoint(mouse_pos) for slot in self.active_inv_page.values()):
+            elif not any(slot.rect.collidepoint(mouse_pos) for slot in self.interactable_slots):
                 _update_item_window(None)
             
     def update(self, dt) -> None:
@@ -222,7 +229,7 @@ class InventoryMenu(pygame.sprite.Sprite):
             if sort_type == 'alphabetical':
                 all_items = sorted(all_items, key=lambda item: item.name)
             if sort_type == 'value':
-                all_items = sorted(all_items, key=lambda item: item.value)
+                all_items = sorted(all_items, key=lambda item: item.value, reverse=True)
 
         for index, slot in enumerate(self.all_slots):
             slot.subject = None
@@ -232,7 +239,7 @@ class InventoryMenu(pygame.sprite.Sprite):
                 pass # skip ones with no subject
         self.menu_refresh()
 
-    def drop_item(self) -> None:
+    def drop_item(self, arg) -> None:
         for slot in self.all_slots:
             if slot.subject is not None and slot.subject.selected:
                 overlay_sprites.remove(slot.subject)
@@ -299,16 +306,16 @@ class CrewQuarters(pygame.sprite.Sprite):
                 overlay_sprites.remove(slot.subject)
                 slot.subject = None #clear what is stored in each slot.
 
-    def show(self, crew_list:list[Crew]):
+    def show(self, crew_list:list[Crew]) -> list[Icon_bg]:
         
         for index, crew_slot in enumerate(self.crew_slots):
             overlay_sprites.add(crew_slot)
             try:
                 crew_slot.subject = crew_list[index]
                 crew_slot.subject.rect.center = crew_slot.rect.center
-                print(crew_list[index].z)
             except IndexError:
                 pass # 
+        return self.crew_slots
 
     def exit(self):
         for crew_slot in self.crew_slots:
