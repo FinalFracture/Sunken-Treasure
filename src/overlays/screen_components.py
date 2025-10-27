@@ -45,7 +45,6 @@ class Overlay(pygame.sprite.Sprite):
         for crew_index, crew_icon in self.crew_list.items():
             overlay_sprites.add(crew_icon)
             crew_icon.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
-            crew_icon.z = overlay_layers['hud_elements']
 
 class ItemStatBox(pygame.sprite.Sprite):
     #the sprite to display an items value, description, weight, and other values

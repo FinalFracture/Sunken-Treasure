@@ -15,7 +15,7 @@ def get_tool_class(tool_name:str) -> Tool:
 
 class Crew(pygame.sprite.Sprite):
     """This class will create a crew member character and funciton as a tool for the player class 'ship'"""
-    def __init__(self, crew_role:str, owner:pygame.sprite.Sprite, z=overlay_layers['hud_elements']):
+    def __init__(self, crew_role:str, owner:pygame.sprite.Sprite, z=overlay_layers['menu_items']):
         """
         A Crew will contain an tool used for finding items or performing in game mechanics based on its role.
 
@@ -60,5 +60,6 @@ class Crew(pygame.sprite.Sprite):
         self.image = self.stats[self.status][0]
     
     def update(self, dt):
+        #print(self.z)
         if self.status == 'selected':
             self.tool.use()

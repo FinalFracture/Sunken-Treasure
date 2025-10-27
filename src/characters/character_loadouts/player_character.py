@@ -123,7 +123,7 @@ class Player_Character(Character):
         Timer.pause_all()
         self.deselect_tools()
         while self.state != 'normal':
-            self.state = self.inventory_ui.show_menu()
+            self.state = self.inventory_ui.show_menu(self.crew_list)
             screen_update(focus=self)
         Timer.resume_all()
         self.overlay.position_crew_icons(self.crew_list)

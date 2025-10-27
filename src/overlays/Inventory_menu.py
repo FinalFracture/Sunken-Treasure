@@ -1,6 +1,7 @@
 import pygame
 from math import floor
 from src.characters.mechanics import GameItem
+from src.characters.mechanics.crew import Crew
 from src.overlays.screen_components import Icon_bg, ItemStatBox, UiButton
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
@@ -78,12 +79,13 @@ class InventoryMenu(pygame.sprite.Sprite):
         _setup_inv_slots()
         self.active_inv_page:dict[int, Icon_bg] = self.inv_pages[self.inv_page_index]
         
-    def show_menu(self) -> None:
+    def show_menu(self, crew_list:list|None = None) -> None:
         """ display to the screen and add to players inventory"""
         if self.is_active == False:
             self.is_active = True
             self.sidebar.show()
-            self.crew_menu.show()
+            if crew_list is not None:
+                self.crew_menu.show(crew_list)
             self.menu_refresh()
             for item in self.menu_ui:
                 overlay_sprites.add(item)
@@ -297,16 +299,22 @@ class CrewQuarters(pygame.sprite.Sprite):
                 overlay_sprites.remove(slot.subject)
                 slot.subject = None #clear what is stored in each slot.
 
-    def show(self):
-        for crew_slot in self.crew_slots:
+    def show(self, crew_list:list[Crew]):
+        
+        for index, crew_slot in enumerate(self.crew_slots):
             overlay_sprites.add(crew_slot)
+            try:
+                crew_slot.subject = crew_list[index]
+                crew_slot.subject.rect.center = crew_slot.rect.center
+                print(crew_list[index].z)
+            except IndexError:
+                pass # 
 
     def exit(self):
         for crew_slot in self.crew_slots:
             overlay_sprites.remove(crew_slot)
 
-        
-class Clipboard(pygame.sprite.Sprite):
+class Clipboard(pygame.sprite.Sprite): 
     def __init__(self, offset:tuple[int], owner:pygame.sprite.Sprite, z=overlay_layers['menu'], buttons=None) -> None:
         super().__init__(overlay_sprites)
         image_path = 'assets\images\hud/clipboard.png'
@@ -351,7 +359,6 @@ class Clipboard(pygame.sprite.Sprite):
             overlay_sprites.add(button)
             for textbox in button.textboxes:
                 textbox.set_position()
-
 
     def show(self) -> None:
         for item in self.display_objects:
