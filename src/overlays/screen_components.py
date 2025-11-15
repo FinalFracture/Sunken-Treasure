@@ -1,12 +1,10 @@
 import pygame
 from pygame.surface import Surface
 from pygame.sprite import Sprite
-from math import ceil, floor
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
-from src.event_managing import EVENT_HANDLER
 
-class Overlay(pygame.sprite.Sprite):
+class Overlay(Sprite):
     def __init__(self, owner):
         super().__init__(overlay_sprites)
         self.master = owner
@@ -46,7 +44,7 @@ class Overlay(pygame.sprite.Sprite):
             overlay_sprites.add(crew_icon)
             crew_icon.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
 
-class ItemStatBox(pygame.sprite.Sprite):
+class ItemStatBox(Sprite):
     #the sprite to display an items value, description, weight, and other values
     #while the inventory menu is active
     def __init__(self, relative_rect: pygame.rect.Rect, offset: tuple, z=overlay_layers['menu_aux']):    
@@ -60,7 +58,7 @@ class ItemStatBox(pygame.sprite.Sprite):
         self.z = z
         self.ui_elements = [self.item_name_display, self.item_value_display, self.item_description_line1, self.item_description_line2]
 
-class UiButton(pygame.sprite.Sprite):
+class UiButton(Sprite):
     def __init__(self, button_text:str, button_func:callable, func_arg, refrence_rect:pygame.Rect, topleft_offset:tuple[int,int], z=overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
         self.name = button_text
@@ -90,7 +88,7 @@ class UiButton(pygame.sprite.Sprite):
     def click(self) -> None:
         self.function(self.arg)
 
-class Icon_bg(pygame.sprite.Sprite):
+class Icon_bg(Sprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
         self.image = pygame.image.load('assets\images\HUD/icon_bg.png').convert_alpha()
@@ -126,7 +124,7 @@ class Icon_bg(pygame.sprite.Sprite):
             elif self.subject is not None and self.subject.selected:
                 self.click(toggle=0)
 
-class UpgradeIconBg(pygame.sprite.Sprite):
+class UpgradeIconBg(Sprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
         self.image = pygame.image.load('assets\images\HUD/upgrade_icon_bg.png').convert_alpha()
@@ -164,7 +162,7 @@ class UpgradeIconBg(pygame.sprite.Sprite):
             if self.subject and self.selected:
                 self.deselect()
 
-class MenuIndicator(pygame.sprite.Sprite):
+class MenuIndicator(Sprite):
     """When the player selects items to purchase, this class highlights the selected item slots to 
     visually indicate what has been selected. This will also apply to any other menues where inventory
     slots are selected, and not immediately resolved."""
@@ -186,7 +184,7 @@ class MenuIndicator(pygame.sprite.Sprite):
     def de_indicate(self) -> None:
         overlay_sprites.remove(self)
 
-class HoverMessage(pygame.sprite.Sprite):
+class HoverMessage(Sprite):
     """This class is a message that displays at its specified coords. it is uninteractable."""
     def __init__(self
                  ,relative_surface:pygame.rect.Rect
@@ -221,7 +219,7 @@ class HoverMessage(pygame.sprite.Sprite):
         #to be called by other classes when they need to modify this classes text
         self.image = self.font.render(self.text, False, self.color)
  
-class Generic(pygame.sprite.Sprite):
+class Generic(Sprite):
     def __init__(self, display_group, topleft_pos, surface_image, z=overlay_layers['menu_items'], offset=(0,0), relative_rect=None):
         super().__init__(display_group)
         self.timers = {}
@@ -235,13 +233,13 @@ class Generic(pygame.sprite.Sprite):
     def update(self, dt) -> None:
         super().update()
         
-class Textbox(pygame.sprite.Sprite):
-    def __init__(self, reference_sprite:pygame.sprite.Sprite, fontsize = 12, z = overlay_layers['text'], offset=(0,0), text='', position='center'):
+class Textbox(Sprite):
+    def __init__(self, reference_sprite:Sprite, fontsize = 12, z = overlay_layers['text'], offset=(0,0), text='', position='center'):
         """
     Display text on screen.
 
     Args:
-        reference_sprite(pygame.sprite.Sprite): The sprite that is used as a reference for placement and parent functions
+        reference_sprite(Sprite): The sprite that is used as a reference for placement and parent functions
         fontsize(int): Size of the text to display
         z(int): the layer of the screen that the sprite will be displayed to. 
         offset(tuple[int,int]): X and Y coords to adjust the position of the textbox relative to the position argument and reference sprite
@@ -301,102 +299,3 @@ class Textbox(pygame.sprite.Sprite):
         if self.master not in overlay_sprites:
             overlay_sprites.remove(self)
         self.image = self.font.render(self.text.title(), True, self.color)
-
-class DialogBox(pygame.sprite.Sprite):
-    def __init__(self, owner:pygame.sprite.Sprite, font_size=12, font_color='black'):
-        super().__init__(overlay_sprites)
-        self.master = owner
-        self.fontsize = font_size
-        self.screen_offset=(27,400)
-        self.z = overlay_layers['menu']
-        self.dialoge:str = ''
-        self.text = ''
-        self.image = pygame.image.load('assets\images\HUD\dialog_box.png')
-        self.rect = self.image.get_rect(topleft=self.screen_offset)
-        self.text_box = Textbox(self, font_size, offset=(100,0), position='middleleft')
-        self.display_items = [self, self.text_box]
-        overlay_sprites.remove(self.display_items)
-        self.is_active = False
-
-    def setup_display_items(self, speaking_crew:Sprite) -> None:
-        #initialize textbox, subject image, and relative display items
-        self.is_active = True
-        self.text = f'{speaking_crew.name}: {self.dialoge}'
-        self.dialoge_identifier = self.text[-1]
-        self.subject_box=Generic(overlay_sprites
-                                 ,(0,0)
-                                 ,self.master.sprite.image
-                                 ,z=overlay_layers['menu_elements']
-                                 ,offset=(20,20)
-                                 ,relative_rect=self.rect)
-        self.speaker_icon = Generic(overlay_sprites
-                                    ,(0,0)
-                                    ,speaking_crew.image
-                                    ,z=overlay_layers['text']
-                                    ,offset=(95,10)
-                                    ,relative_rect=self.rect)
-        self.display_items.append(self.speaker_icon)
-        self.display_items.append(self.subject_box)
-        overlay_sprites.add(self.display_items)
-
-        #dialoging setup
-        self.ready_to_continue = False
-        self._text_scroll_direction = 0
-        self.text_on_screen_index = 0
-        self.shown_characters = []
-        self.dialoge_end = False
-
-    def update(self, dt):
-        pass 
-
-    def process_text(self, dt):
-        EVENT_HANDLER.run(self.dialoge_input) 
-        state = self._check_state()
-        if state == 'normal':
-            self._end_dialoge()
-            return state
-        
-        for character in range(len(self.text)-40):
-            self.shown_characters.append(self.text[character:character+40])
-        self._animate_text(dt)      
-
-    def _animate_text(self, dt):
-        if self.text_on_screen_index > len(self.shown_characters) -1:
-            self.text_on_screen_index = len(self.shown_characters) -1  #cap index at max length of string
-            self.dialoge_end = True
-
-        elif self.text_on_screen_index < 0: #cap min value of index at 0
-            self.text_on_screen_index = 0
-
-        else:  #allow text scrolling between 0 and max index value
-            self.text_on_screen_index += self._text_scroll_direction * dt * TEXT_SPEED
-
-        self.text = self.shown_characters[int(self.text_on_screen_index)]
-        self.text_box.text = self.text
-        
-    def _end_dialoge(self):
-        self.is_active = False
-        overlay_sprites.remove(self.display_items)
-        self.display_items = [self, self.text_box]
-
-    def _check_state(self) -> str:
-        if self.ready_to_continue == True:
-            return 'normal'
-        else:
-            if self.dialoge_identifier == '*':
-                return 'nemu'
-            elif self.dialoge_identifier == '%':
-                return 'yes/no'
-            elif self.dialoge_identifier == '&':
-                return 'dialoge'
-
-    def dialoge_input(self, keys, mouse_pos, dt) -> None:
-        self._text_scroll_direction = 0
-        if keys[pygame.K_d]:
-            self._text_scroll_direction = 1
-        elif keys[pygame.K_a]:
-            self._text_scroll_direction = -1
-        
-        if keys[pygame.K_ESCAPE] or (keys[pygame.K_RETURN] and self.dialoge_end):
-            self.ready_to_continue = True
-

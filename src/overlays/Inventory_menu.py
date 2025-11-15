@@ -1,7 +1,7 @@
 import pygame
 from math import floor
-from src.characters.mechanics import GameItem
-from src.characters.mechanics.crew import Crew
+from src.mechanics.tools import GameItem
+from src.characters.crew import Crew
 from src.overlays.screen_components import Icon_bg, ItemStatBox, UiButton
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers

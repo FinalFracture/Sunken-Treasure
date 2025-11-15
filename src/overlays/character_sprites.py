@@ -88,9 +88,10 @@ class Character_Sprite(Sprite):
         self.rect.center = (starting_pos)
 
         #hitbox
-        self.hitbox = self.rect
-        self.hitbox.height = self.rect.height*0.75
-        self.hitbox.top = self.rect.top
+        self.hitbox = self.rect.inflate(0.9, 0.9)
+
+        # interaction space
+        self.interaction_box = self.rect.inflate(1.5, 1.5)
 
         #player indicator image and rect
         self.status_rect = Rect(0,0,20,20) #display small status indicators to the player in this location
@@ -179,7 +180,8 @@ class Character_Sprite(Sprite):
     def _update_auxilarry_rects(self):
         #update things like the hitbox rect, status numbers/icons, any element that is suppost to follow the player. 
         #self.hitbox = self.rect.inflate(.8,.5)
-        self.hitbox.top = self.rect.top
+        self.hitbox.center = self.rect.center
+        self.interaction_box.center = self.rect.center
             
     def update(self, dt):
         self._update_auxilarry_rects()

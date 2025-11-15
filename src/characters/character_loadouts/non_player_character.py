@@ -6,10 +6,9 @@ from src.utils.settings import *
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites
 from src.characters.character_loadouts import Character
-from src.characters.mechanics.crew import Crew
-from src.characters.npc_dialog_trees import NPC_dialoge_1
 from src.overlays.character_sprites import Character_Sprite
-from src.overlays.screen_components import DialogBox
+from src.characters.crew import Crew
+from src.story.dialoge.dialoge_box import DIALOGE
 
 class Non_Player_Character(Character):
     """The non player character class will encompass all self moving objects that are not the player."""
@@ -18,11 +17,7 @@ class Non_Player_Character(Character):
         self.sprite:Character_Sprite = Character_Sprite(self, starting_pos, ship_type)
         #initialization setup
         self._npc_setup()
-        self.dialog_box = DialogBox(self)
-        self.relation = 'new'
-        self.dialoge = NPC_dialoge_1['greetings'][self.relation]
         
-
     def _npc_setup(self):
         #stats/metric setup
         all_sprites.remove(self.crew_list)
@@ -36,6 +31,7 @@ class Non_Player_Character(Character):
                                             self.wander_range * 2 )
         self.direction = Vector2()
         self.pos = self.sprite.rect.center
+        self.state = 'normal'
 
         #logic setup
         wander_timer = Timer(self.wander_duration,starting_func = self._get_direction, running_func= self.move)
@@ -65,12 +61,12 @@ class Non_Player_Character(Character):
         if self.direction.magnitude() > 0:
             self.direction = self.direction.normalize()
             self.pos += self.direction * player_speed * dt 
-            self.sprite.rect.center = self.pos
+            self.sprite.rect.center = (0,0) # self.pos
         
     def _get_tool_use(self) -> None:
         #roll a dice to determine if this ship will be fishing, wandering, etc.
         pass
-    """
+        """
         if len(self.inventory) < 10:
             active_crew:Crew = random.choice(self.crew_list)
             active_crew.tool.use
@@ -87,16 +83,14 @@ class Non_Player_Character(Character):
         else:
             self.moving = True
 
-    def interact(self, interactor) -> None:
+    def interact(self, interactor:Crew) -> None:
         #boatshops should give their introduction, then display inventory and trade menu.
         if self.state == 'normal':
             self.state = 'dialog'
             speaking_crew = random.choice(self.crew_list)
-            self.dialog_box.dialoge = NPC_dialoge_1["greetings"][self.relation]
-            self.dialog_box.setup_display_items(speaking_crew)
-            self.relation = 'familiar'
+            DIALOGE.start_dialoge(interactor, speaking_crew)
 
-        self.state = self.dialog_box.process_text(EVENT_HANDLER.dt)
+        self.state = DIALOGE.run()
         return self.state
 
     def update(self, dt) -> None:

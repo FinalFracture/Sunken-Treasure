@@ -1,5 +1,5 @@
-from src.characters.mechanics.crew import Crew
-from src.characters.mechanics import Tool
+from src.characters.crew import Crew
+from src.mechanics.tools import Tool
 
 BOAT_STATS = {
     'galleon':{
@@ -25,7 +25,7 @@ class Character():
         self.stats = BOAT_STATS[ship_type]
         self.gold:int = 50
         self.timers:dict = {}
-        self.crew_list:list[Crew] = [Crew(crew_role='rockhound',owner=self), Crew(crew_role='angler',owner=self)] 
+        self.crew_list:list[Crew] = [Crew(crew_role='rockhound',master=self), Crew(crew_role='angler',master=self)] 
         self.active_crew:Crew = None
         self.state = 'normal'
         self.animations:dict = {'left': [], 'right': []}

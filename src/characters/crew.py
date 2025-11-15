@@ -1,11 +1,11 @@
 import pygame
+import random
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
-from src.characters.mechanics import Tool, item_stats, generate_name, generate_tool_modifier
-from src.characters.mechanics.fishing import FishingPole
-from src.characters.mechanics.mining import Pickaxe
-
-
+from src.mechanics.tools import Tool, item_stats, generate_name, generate_tool_modifier
+from src.mechanics.tools.fishing import FishingPole
+from src.mechanics.tools.mining import Pickaxe
+from src.characters.crew_archetypes import ARCHETYPES
 
 def get_tool_class(tool_name:str) -> Tool:
     if tool_name == 'fishing_pole':
@@ -15,7 +15,7 @@ def get_tool_class(tool_name:str) -> Tool:
 
 class Crew(pygame.sprite.Sprite):
     """This class will create a crew member character and funciton as a tool for the player class 'ship'"""
-    def __init__(self, crew_role:str, owner:pygame.sprite.Sprite, z=overlay_layers['menu_items']):
+    def __init__(self, crew_role:str, master:pygame.sprite.Sprite, z=overlay_layers['menu_items']):
         """
         A Crew will contain an tool used for finding items or performing in game mechanics based on its role.
 
@@ -33,8 +33,10 @@ class Crew(pygame.sprite.Sprite):
         """
         super().__init__(overlay_sprites)
         overlay_sprites.remove(self)
-        self.master:pygame.sprite.Sprite = owner
+        self.master:pygame.sprite.Sprite = master
         self.status:str = 'unselected'
+        self.type = 'generic'
+        self.archetype = random.choice(list(ARCHETYPES.keys()))
         self.role:str = crew_role 
         self.stats:dict = item_stats['crew'][self.role].copy()
         self.stats['name'] = generate_name()

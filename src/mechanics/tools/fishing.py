@@ -1,5 +1,5 @@
 import random
-from src.characters.mechanics import Tool, GameItem, item_stats
+from src.mechanics.tools import Tool, GameItem, item_stats
 from src.utils.settings import *
 from src.event_managing import EVENT_HANDLER
 #from maps import MapTile

@@ -1,6 +1,6 @@
 import random
 from src.utils.settings import *
-from src.characters.mechanics import Tool, GameItem
+from src.mechanics.tools import Tool, GameItem
 from src.event_managing import EVENT_HANDLER
 
 class Pickaxe(Tool):

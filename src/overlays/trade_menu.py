@@ -22,11 +22,10 @@ class TradeMenu(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(centerx=screen_width/2, bottom=screen_height)
 
         #items to display setup
-        self.buy_button:UiButton = UiButton(overlay_sprites, button_text='Buy', button_func=self._buy, refrence_rect=self.rect, topleft_offset=(403,22))
-        self.sell_button:UiButton = UiButton(overlay_sprites, button_text='Sell', button_func=self._sell, refrence_rect=self.rect, topleft_offset=(39,22))
-        self.gold_textbox:Textbox = Textbox(overlay_sprites, self, offset=(239, 55), position='relative')
+        self.buy_button:UiButton = UiButton(button_text='Buy', button_func=self._buy, func_arg=None, refrence_rect=self.rect, topleft_offset=(403,22))
+        self.sell_button:UiButton = UiButton(button_text='Sell', button_func=self._sell, func_arg=None, refrence_rect=self.rect, topleft_offset=(39,22))
+        self.gold_textbox:Textbox = Textbox(self, offset=(239, 55), position='relative')
         self.buttons:list[UiButton] = [self.buy_button, self.sell_button]
-        self.temp_buttons:list[UiButton] = []
         self.transactable_spaces = []
         self.menu_ui:list = [self, self.buy_button, self.sell_button, self.gold_textbox]
 

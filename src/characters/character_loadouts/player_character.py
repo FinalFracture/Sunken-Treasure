@@ -1,4 +1,5 @@
 import pygame
+import random
 from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
@@ -29,17 +30,16 @@ class Player_Character(Character):
         #check for interactions with the worlds objects
         self.state = 'interacting'
         for interactable_object in all_sprites:
-            try:
-                if self.sprite.rect.colliderect(interactable_object) and hasattr(interactable_object.master, 'interact'):
-                    Timer.pause_all()
-                    self.deselect_tools()
-                    interactable_object.master.deselect_tools()
-                    while self.state != 'normal':
-                        self.state = interactable_object.master.interact(self)
-                        screen_update(focus=self)
-                    break
-            except: # if the sprite has no master and/or no interact method
-                pass
+            if self.sprite.interaction_box.colliderect(interactable_object) and hasattr(interactable_object.master, 'interact'):
+                Timer.pause_all()
+                self.deselect_tools()
+                interactable_object.master.deselect_tools()
+                player_crew = random.choice(self.crew_list)
+                while self.state != 'normal':
+                    self.state = interactable_object.master.interact(player_crew)
+                    screen_update(focus=self)
+                break
+
         Timer.resume_all()
         self.state = 'normal'
         return
@@ -80,7 +80,7 @@ class Player_Character(Character):
             elif keys[pygame.K_2]:
                 key_num = 2
 
-            elif keys[pygame.K_LSHIFT]: #interact with objects
+            elif keys[pygame.K_SPACE]: #interact with objects
                 self._interact()
 
             elif keys[pygame.K_e]:
@@ -89,12 +89,8 @@ class Player_Character(Character):
             if key_num > 0:
                 _activate_crew(key_num)
 
-        if any(keys[key] for key in EVENT_HANDLER.overworld_keys):
-            if self.is_key_pressed == False:
-                _single_press_operations()
-            self.is_key_pressed = True        
-        else:
-            self.is_key_pressed = False
+        if EVENT_HANDLER.is_key_pressed == False:
+            _single_press_operations()
 
         if not self.is_clicking and pygame.mouse.get_pressed()[0]:
             _single_click_operations()

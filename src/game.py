@@ -6,7 +6,7 @@ from src.characters.character_loadouts.player_character import Player_Character
 from src.characters.character_loadouts.shop import BoatShop
 from src.characters.character_loadouts.non_player_character import NPCGenerator
 #from maps import Map
-from src.characters.mechanics import items_init
+from src.mechanics.tools import items_init
 
 
 class Level:

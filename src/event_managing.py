@@ -9,8 +9,9 @@ class EventHandler:
             text = '\nEvent handler started'
             log_file.write(text)
         self.dt = 0.0
+        self.is_key_pressed = False
         self.anything = None
-        self.overworld_keys = [pygame.K_1, 
+        self.single_press_keys = [pygame.K_1, 
                         pygame.K_2, 
                         pygame.K_3, 
                         pygame.K_4, 
@@ -20,12 +21,13 @@ class EventHandler:
                         pygame.K_8,
                         pygame.K_9, 
                         pygame.K_e, 
-                        pygame.K_LSHIFT]
-        
-        self.menu_keys = [
+                        pygame.K_SPACE,
                         pygame.K_a,
                         pygame.K_d,
-                        pygame.K_ESCAPE]
+                        pygame.K_ESCAPE,
+                        pygame.K_RETURN,
+                        pygame.K_w,
+                        pygame.K_s]
 
     def run(self, input_function:callable) -> None:
         """Event handler is the sole checker for mouse and keyboard inputs. Should only have one instance per game instance."""
@@ -37,14 +39,11 @@ class EventHandler:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()  
-        
+            
         input_function(keys, mouse_pos, self.dt)
-
-        # every frame debug
-        if self.anything is not None: # and keys[pygame.K_0]:
-            self.anything.debug()
-
-    def get_test_item(self, item):
-        self.anything = item
+        if any(keys[key] for key in self.single_press_keys):
+            self.is_key_pressed = True
+        else:
+            self.is_key_pressed = False
 
 EVENT_HANDLER = EventHandler()
