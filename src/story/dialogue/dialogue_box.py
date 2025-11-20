@@ -12,7 +12,7 @@ from src.story.dialogue.generic_dialogue import get_dialogue
 class DialogBox(Sprite):
     
     relations:dict[list[str, str], dict[str, str | int]] = {} 
-    #eg.  {'gerald lopez and harmony wheeler', {'crew':['gerald lopez', 'harmony wheeler'],'interatctions':4} }
+    #eg. {'gerald lopez and harmony wheeler', {'crew':['gerald lopez', 'harmony wheeler'],'interatctions':4} }
 
     def __init__(self):
         super().__init__(overlay_sprites)
@@ -109,7 +109,7 @@ class DialogBox(Sprite):
         self.speaker_space_image.fill('black')
         self.speaker = self.dialogue[self.dialogue_index]['speaker']
         self.speaker_space.image = self.speaker.master.sprite.image
-        self.speaker_icon = self.speaker.image
+        self.speaker_icon.image = self.speaker.image
         self._text_scroll_direction = 0
         self.text_on_screen_index = 0
         self.shown_characters = []

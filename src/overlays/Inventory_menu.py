@@ -186,7 +186,7 @@ class InventoryMenu(pygame.sprite.Sprite):
                 self.item_stats_display.item_description_line1.text =''
                 self.item_stats_display.item_description_line2.text =""
 
-        if any(keys[key] for key in EVENT_HANDLER.menu_keys):
+        if any(keys[key] for key in EVENT_HANDLER.single_press_keys):
             if self.key_pressed == False:
                 _key_inputs() 
             self.key_pressed = True
