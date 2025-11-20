@@ -175,7 +175,7 @@ general_dialog_trees = {
                     "Excuse me, can you direct me to the nearest island?",
                     "The island of Epithets lies far to the north, beware the icebergs.",
                     "I said nearest. . .",
-                    "Sorry, I was programmed with flavor dialoge. . ."
+                    "Sorry, I was programmed with flavor dialogue. . ."
                 ]
             ]
         },
@@ -202,7 +202,7 @@ general_dialog_trees = {
                     "Excuse me, can you direct me to the nearest island?",
                     "The island of Epithets lies far to the north, beware the icebergs.",
                     "I said nearest. . .",
-                    "Sorry, I was programmed with flavor dialoge. . ."
+                    "Sorry, I was programmed with flavor dialogue. . ."
                 ]
             ]
         },
@@ -229,7 +229,7 @@ general_dialog_trees = {
                     "Excuse me, can you direct me to the nearest island?",
                     "The island of Epithets lies far to the north, beware the icebergs.",
                     "I said nearest. . .",
-                    "Sorry, I was programmed with flavor dialoge. . ."
+                    "Sorry, I was programmed with flavor dialogue. . ."
                 ]
             ]
         },
@@ -256,7 +256,7 @@ general_dialog_trees = {
                     "Excuse me, can you direct me to the nearest island?",
                     "The island of Epithets lies far to the north, beware the icebergs.",
                     "I said nearest. . .",
-                    "Sorry, I was programmed with flavor dialoge. . ."
+                    "Sorry, I was programmed with flavor dialogue. . ."
                 ]
             ]
         },
@@ -283,14 +283,14 @@ general_dialog_trees = {
                     "Excuse me, can you direct me to the nearest island?",
                     "The island of Epithets lies far to the north, beware the icebergs.",
                     "I said nearest. . .",
-                    "Sorry, I was programmed with flavor dialoge. . ."
+                    "Sorry, I was programmed with flavor dialogue. . ."
                 ]
             ]
         }
     }
 }
 
-def get_dialoge(relation:dict) -> list[dict[str, Crew |str]]:
+def get_dialogue(relation:dict) -> list[dict[str, Crew |str]]:
     player = relation['crew'][0]
     interactee = relation['crew'][1]
     convo_starter:Crew = random.choice([player, interactee])

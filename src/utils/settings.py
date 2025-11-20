@@ -8,7 +8,7 @@ screen_color = (30,30,220)
 #player settings
 player_speed = 100
 
-#dialoge settings
+#dialogue settings
 TEXT_SPEED = 25
 
 #weather setup

@@ -8,7 +8,7 @@ from src.utils.cameras import all_sprites
 from src.characters.character_loadouts import Character
 from src.overlays.character_sprites import Character_Sprite
 from src.characters.crew import Crew
-from src.story.dialoge.dialoge_box import DIALOGE
+from src.story.dialogue.dialogue_box import DIALOGUE
 
 class Non_Player_Character(Character):
     """The non player character class will encompass all self moving objects that are not the player."""
@@ -88,9 +88,9 @@ class Non_Player_Character(Character):
         if self.state == 'normal':
             self.state = 'dialog'
             speaking_crew = random.choice(self.crew_list)
-            DIALOGE.start_dialoge(interactor, speaking_crew)
+            DIALOGUE.start_dialogue(interactor, speaking_crew)
 
-        self.state = DIALOGE.run()
+        self.state = DIALOGUE.run()
         return self.state
 
     def update(self, dt) -> None:

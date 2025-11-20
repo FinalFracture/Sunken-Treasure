@@ -39,7 +39,7 @@ class Level:
         
         #lists and dicts
         self.game_state = 'normal'
-        self.dialoge_boxes = [npc.dialog_box for npc in self.interactables if npc.dialog_box]
+        self.dialogue_boxes = [npc.dialog_box for npc in self.interactables if npc.dialog_box]
         self.pause_overworld_ui_list = [self.player.inventory_ui, *[item.inventory_ui for item in self.interactables]]
         self.maps = []
 
@@ -53,7 +53,7 @@ class Level:
         if self.game_state == 'normal':
             self.overlay_sprites.update(dt)
             self.all_sprites.update(dt)
-        elif self.game_state in ('menu', 'dialoge'):
+        elif self.game_state in ('menu', 'dialogue'):
             self.update_menus(dt)
             self.overlay_sprites.update(dt)
         self.all_sprites.custom_draw(self.player) 
@@ -69,8 +69,8 @@ class Level:
     def _check_game_state(self) -> None:
         if any(menu.is_active for menu in self.pause_overworld_ui_list):
             self.game_state = 'menu'
-        elif any(dialoge_box.is_active for dialoge_box in self.dialoge_boxes):
-            self.game_state = 'dialoge'
+        elif any(dialogue_box.is_active for dialogue_box in self.dialogue_boxes):
+            self.game_state = 'dialogue'
         else:
             self.game_state = 'normal'
 

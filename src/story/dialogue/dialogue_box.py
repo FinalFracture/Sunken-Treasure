@@ -7,7 +7,7 @@ from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layer
 from src.event_managing import EVENT_HANDLER
 from src.overlays.screen_components import Textbox, Generic
 from src.characters.crew import Crew
-from src.story.dialoge.generic_dialogue import get_dialoge
+from src.story.dialogue.generic_dialogue import get_dialogue
 
 class DialogBox(Sprite):
     
@@ -19,7 +19,7 @@ class DialogBox(Sprite):
         self.fontsize  = 12
         self.screen_offset=(27,400)
         self.z = overlay_layers['menu']
-        self.dialoge:list[str]
+        self.dialogue:list[str]
         self.text:str
         self.image = pygame.image.load('assets\images\HUD\dialog_box.png')
         self.rect = self.image.get_rect(topleft=self.screen_offset)
@@ -40,12 +40,12 @@ class DialogBox(Sprite):
         self.display_items = [self, self.text_box, self.speaker_space, self.speaker_icon]
         overlay_sprites.remove(self.display_items)
 
-    def start_dialoge(self, player_crew:Crew, interactee_crew:Crew) -> None:
+    def start_dialogue(self, player_crew:Crew, interactee_crew:Crew) -> None:
         #initialize textbox, subject image, and relative display items
-        self.dialoge:list[dict[str, Crew |str]] = get_dialoge(self._update_relations(player_crew, interactee_crew))
+        self.dialogue:list[dict[str, Crew |str]] = get_dialogue(self._update_relations(player_crew, interactee_crew))
         self.dialogue_index:int = 0
         self.dialogue_identifier = ''
-        self.dialoge_end = False
+        self.dialogue_end = False
         self.ready_to_continue:bool = False
         overlay_sprites.add(self.display_items)
         self._change_dialogue()
@@ -55,13 +55,13 @@ class DialogBox(Sprite):
 
     def run(self) -> str:
         
-        EVENT_HANDLER.run(self.dialoge_input) 
-        if self.dialoge_end == True:
-            return self._end_dialoge()
+        EVENT_HANDLER.run(self.dialogue_input) 
+        if self.dialogue_end == True:
+            return self._end_dialogue()
         else:
             self._animate_text()      
 
-    def dialoge_input(self, keys, mouse_pos, dt) -> None:
+    def dialogue_input(self, keys, mouse_pos, dt) -> None:
         def _single_press_operations():
             if keys[pygame.K_w]:
                 self.dialogue_index -= 1
@@ -72,7 +72,7 @@ class DialogBox(Sprite):
                 self._change_dialogue()
             
             if keys[pygame.K_ESCAPE] or (keys[pygame.K_RETURN]):
-                self.dialoge_end = True
+                self.dialogue_end = True
 
         self._text_scroll_direction = 0
         if keys[pygame.K_d]:
@@ -85,8 +85,8 @@ class DialogBox(Sprite):
                 _single_press_operations()
  
     def _check_dialogue_state(self):
-        # change dialoge resets dialogue state and prevents exit, but calling the match exits early.
-        if self.dialogue_index > len(self.dialoge)-1 and self.text_on_screen_index >= len(self.shown_characters) -1:
+        # change dialogue resets dialogue state and prevents exit, but calling the match exits early.
+        if self.dialogue_index > len(self.dialogue)-1 and self.text_on_screen_index >= len(self.shown_characters) -1:
             match self.dialogue_identifier: 
                 case '%':
                     pass
@@ -95,34 +95,33 @@ class DialogBox(Sprite):
                 case '&':
                     pass
                 case '':
-                    self.dialoge_end = True        
+                    self.dialogue_end = True        
 
     def _change_dialogue(self) -> None:
         #dialoging setup
-        if self.dialogue_index > len(self.dialoge) -1:
+        if self.dialogue_index > len(self.dialogue) -1:
             self._check_dialogue_state()
-            self.dialogue_index = len(self.dialoge) -1
+            self.dialogue_index = len(self.dialogue) -1
         elif self.dialogue_index <= 0:
             self.dialogue_index = 0
-        if self.dialoge_end == True:
+        if self.dialogue_end == True:
             return
         self.speaker_space_image.fill('black')
-        self.speaker = self.dialoge[self.dialogue_index]['speaker']
+        self.speaker = self.dialogue[self.dialogue_index]['speaker']
         self.speaker_space.image = self.speaker.master.sprite.image
         self.speaker_icon = self.speaker.image
         self._text_scroll_direction = 0
         self.text_on_screen_index = 0
         self.shown_characters = []
-        self.text = f"{self.dialoge[self.dialogue_index]['speaker'].name}: {self.dialoge[self.dialogue_index]['text']}"
+        self.text = f"{self.dialogue[self.dialogue_index]['speaker'].name}: {self.dialogue[self.dialogue_index]['text']}"
         if len(self.text) < 40:
             self.shown_characters.append(self.text)
         else:
             for character in range(len(self.text)-39):
                 self.shown_characters.append(self.text[character:character+40])
 
-    def _end_dialoge(self) -> str:
+    def _end_dialogue(self) -> str:
         overlay_sprites.remove(self.display_items)
-        self.display_items = [self, self.text_box]
         return 'normal'
 
     def _animate_text(self):
@@ -139,7 +138,7 @@ class DialogBox(Sprite):
     def _update_relations(self, player_crew:Crew, interactee:Crew) -> dict:
         """
         Add a relation between 2 world crew members and start counting interactions. Update interaction count if
-        relation exists already. Set the next dialoge they would have. 
+        relation exists already. Set the next dialogue they would have. 
         """
         relationship_key = str(sorted([player_crew.name, interactee.name])) #alphabetize them to ensure consistency in the future
         if relationship_key not in DialogBox.relations.keys():
@@ -163,4 +162,4 @@ class DialogBox(Sprite):
         return relation
 
 
-DIALOGE = DialogBox()
+DIALOGUE = DialogBox()
