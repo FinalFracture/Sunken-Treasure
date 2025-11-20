@@ -290,7 +290,7 @@ general_dialog_trees = {
     }
 }
 
-def get_dialoge(relation:dict) -> list[str]:
+def get_dialoge(relation:dict) -> list[dict[str, Crew |str]]:
     player = relation['crew'][0]
     interactee = relation['crew'][1]
     convo_starter:Crew = random.choice([player, interactee])
@@ -302,18 +302,20 @@ def get_dialoge(relation:dict) -> list[str]:
         for index, string in enumerate(dialogue_leaf):
             if index % 2 == 0:
                 translation = _translate(string, player)
+                dialogue.append({'speaker':player, 'text':translation})
             else:
                 translation = _translate(string, interactee)
-            dialogue.append({'speaker':player, 'text':translation})
+                dialogue.append({'speaker':interactee, 'text':translation})
     
     else:
         dialogue_leaf = random.choice(dialogue_branch['initiate'])
         for index, string in enumerate(dialogue_leaf):
             if index % 2 == 0:
                 translation = _translate(string, interactee)
+                dialogue.append({'speaker':interactee, 'text':translation})
             else:
                 translation = _translate(string, player)
-            dialogue.append({'speaker':interactee, 'text':translation})
+                dialogue.append({'speaker':player, 'text':translation})
     
     return dialogue
 
