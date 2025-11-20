@@ -56,8 +56,6 @@ class DialogBox(Sprite):
     def run(self) -> str:
         
         EVENT_HANDLER.run(self.dialoge_input) 
-        print(f'Page: {self.dialogue_index}/{len(self.dialoge)-1}; Position: {self.text_on_screen_index}/{len(self.shown_characters)-1}; RTC: {self.dialogue_index == len(self.dialoge)-1 and self.text_on_screen_index == len(self.shown_characters) -1}; DE: {self.dialoge_end}')
-
         if self.dialoge_end == True:
             return self._end_dialoge()
         else:
@@ -119,7 +117,7 @@ class DialogBox(Sprite):
         if len(self.text) < 40:
             self.shown_characters.append(self.text)
         else:
-            for character in range(len(self.text)-40):
+            for character in range(len(self.text)-39):
                 self.shown_characters.append(self.text[character:character+40])
 
     def _end_dialoge(self) -> str:
@@ -137,7 +135,6 @@ class DialogBox(Sprite):
             self.text_on_screen_index = 0
 
         self.text_box.text = self.shown_characters[int(self.text_on_screen_index)]
-
 
     def _update_relations(self, player_crew:Crew, interactee:Crew) -> dict:
         """

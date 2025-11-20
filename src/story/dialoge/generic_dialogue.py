@@ -335,5 +335,6 @@ def _translate(dialogue_string:str, character:Crew) -> str:
     new_dialogue += punctuation # add back the punctuation
     return new_dialogue
 
+
 if __name__ == '__main__':
     print(_translate("this is my boom stick. please dont touch it."))
