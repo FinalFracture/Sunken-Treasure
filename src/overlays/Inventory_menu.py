@@ -156,10 +156,6 @@ class InventoryMenu(pygame.sprite.Sprite):
                         if keys[pygame.K_LCTRL]:
                             self.select_all(slot.subject)
                         else:
-<<<<<<< HEAD
-=======
-                            print('calling')
->>>>>>> e2a1257117eaa53ef9a29196445045318fa451bc
                             slot.click()
                     elif pygame.mouse.get_pressed()[2] :
                         [inv_slot.click(toggle=0) for inv_slot in self.active_inv_page.values()]
