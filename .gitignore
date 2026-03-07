@@ -1,0 +1,17 @@
+# Bytecode cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+
+# Python virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# IDEs
+.idea/
+.vscode/
+__pychache__/
