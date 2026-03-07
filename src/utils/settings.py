@@ -1,8 +1,13 @@
 from pygame.math import Vector2
 
 #screen settings
+<<<<<<< HEAD
 screen_width = 1280
 screen_height = 640
+=======
+screen_width = 1200
+screen_height = 600
+>>>>>>> e2a1257117eaa53ef9a29196445045318fa451bc
 screen_color = (30,30,220)
 
 #player settings
