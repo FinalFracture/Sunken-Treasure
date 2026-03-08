@@ -146,25 +146,45 @@ class Character_Sprite(Sprite):
         collided_sprites:list[Sprite] = spritecollide(self, collidable_sprites, False)
         collided_sprites.remove(self)
 
-        def _check_vertical_collisions(rect:Rect):
-            for i in range(self.rect.left, self.rect.right +1):
-                if i in range(rect.left, rect.right + 1):
-                    if self.rect.centery < rect.centery and self.direction.y != 0:
-                        self.direction.y = -1
-                    else:
-                        self.direction.y = 1
+        def _check_vertical_collisions(rect:Rect) -> int:
+            collided_cols:int = 0
+            for i in range(self.rect.left, self.rect.right +1): # for each horizontal coord
+                if i in range(rect.left, rect.right + 1): # if overlapping with collided object horizontal coord
+                    collided_cols += 1
+            return collided_cols
+   
                 
-        def _check_horizontal_collisions(rect:Rect):
+        def _check_horizontal_collisions(rect:Rect) -> int:
+            collided_rows:int = 0
             for i in range(self.rect.top, self.rect.bottom +1):
                 if i in range(rect.top, rect.bottom + 1):
-                    if self.rect.centerx < rect.centerx and self.direction.x != 0:
-                        self.direction.x = -1
-                    else:
-                        self.direction.x = 1
+                    collided_rows += 1
+            return collided_rows
+        
+        def _alter_movement(rows:int, cols:int, collide_rect:Rect) -> None:
+            if rows > cols: # horizontal collision
+                if self.rect.centerx < collide_rect.centerx and self.direction.x == 1: 
+                    # collide on right side of player and moving right
+                    self.direction.x = 0
+
+                if self.rect.centerx > collide_rect.centerx and self.direction.x == -1: 
+                    # collide on left side of player and moving left
+                    self.direction.x = 0
+
+            if cols > rows:
+                # vertical collision
+                if self.rect.centery < collide_rect.centery and self.direction.y == 1: 
+                    # collide on right side of player and moving right
+                    self.direction.y = 0
+                    
+                if self.rect.centery > collide_rect.centery and self.direction.y == -1: 
+                    # collide on left side of player and moving left
+                    self.direction.y = 0
 
         for sprite in collided_sprites:
-            _check_vertical_collisions(sprite.rect)
-            _check_horizontal_collisions(sprite.rect)
+            overlapping_cols:int = _check_vertical_collisions(sprite.rect)
+            overlapping_rows:int = _check_horizontal_collisions(sprite.rect)
+            _alter_movement(overlapping_rows, overlapping_cols, sprite.rect)
         
     def animate(self, dt):
         self.status_rect.center = (self.rect.centerx, self.rect.top)

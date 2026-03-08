@@ -48,7 +48,7 @@ class Player_Character(Character):
         if self.state == 'normal':
             self._stat_error_handling()
             EVENT_HANDLER.run(self.overworld_contorls)
-            self._navigation()
+            self._set_speed_and_coords()
             super().update(dt)
   
     def overworld_contorls(self, keys, mouse_pos, dt):
@@ -98,7 +98,7 @@ class Player_Character(Character):
         elif not pygame.mouse.get_pressed()[0]:
             self.is_clicking = False
         
-    def _navigation(self):
+    def _set_speed_and_coords(self) -> None:
         self.gps_coord = (int(self.sprite.rect.x / 7), int((self.sprite.rect.y / 7)*-1))
         if self.sprite.moving:
             self.knotical_speed = round((((self.speed-100)/100)*7.9)+11.8) 
