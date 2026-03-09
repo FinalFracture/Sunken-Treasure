@@ -26,13 +26,11 @@ class DialogBox(Sprite):
         self.text_box = Textbox(self, self.fontsize, offset=(100,0), position='middleleft')
         self.speaker_space_image = Surface((70,70))
         self.speaker_space=Generic(overlay_sprites
-                                 ,(0,0)
                                  ,self.speaker_space_image
                                  ,z=overlay_layers['menu_elements']
                                  ,offset=(15,15)
                                  ,relative_rect=self.rect)
         self.speaker_icon = Generic(overlay_sprites
-                                    ,(0,0)
                                     ,Surface((16,16))
                                     ,z=overlay_layers['text']
                                     ,offset=(95,10)

@@ -220,7 +220,7 @@ class HoverMessage(Sprite):
         self.image = self.font.render(self.text, False, self.color)
  
 class Generic(Sprite):
-    def __init__(self, display_group, topleft_pos, surface_image, z=overlay_layers['menu_items'], offset=(0,0), relative_rect=None):
+    def __init__(self, display_group, surface_image, z=overlay_layers['menu_items'], offset=(0,0), topleft_pos:tuple[int, int]=(0,0), relative_rect=None):
         super().__init__(display_group)
         self.timers = {}
         self.image:Surface = surface_image
@@ -299,3 +299,30 @@ class Textbox(Sprite):
         if self.master not in overlay_sprites:
             overlay_sprites.remove(self)
         self.image = self.font.render(self.text.title(), True, self.color)
+
+class CrewQuartersHUD(Sprite):
+    """A class to create and manage the UI for displaying crew on the HUD and in game menus
+    
+    """
+    
+    def __init__(self) -> None:
+        super().__init__(overlay_sprites)
+        image_path:str = 'assets/images/hud/crew_quarters/crew_quarters_hud.png'
+        self.image:Surface = pygame.image.load(image_path)
+        self.rect = self.image.get_rect(left=0, bottom=640)
+        self.z = overlay_layers['hud']
+        self.max_crew:int = 12
+        self.current_crew_slots:list[Generic] = []
+        self.create_crew_space()
+    
+    def create_crew_space(self) -> None:
+        """Create an empty spot in UI for a crew member
+        
+        """
+        if len(self.current_crew_slots) < self.max_crew:
+            slot_image_path = 'assets/images/hud/crew_quarters/crew_space.png'
+            slot_image = pygame.image.load(slot_image_path).convert_alpha()
+            new_slot:Generic = Generic(overlay_sprites, slot_image, relative_rect=self.rect)
+            self.current_crew_slots.append(new_slot)
+
+            
