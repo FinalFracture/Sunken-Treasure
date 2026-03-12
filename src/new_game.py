@@ -36,4 +36,3 @@ class main_loop:
 
         #draw to the screen and update positions
         
-        
