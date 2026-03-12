@@ -19,7 +19,7 @@ class TradeMenu(pygame.sprite.Sprite):
         """set the position for each element of the menu and assign its logic"""
         #menu setup
         self.image = pygame.image.load('assets\images\hud/shop_bar.png')
-        self.rect = self.image.get_rect(centerx=screen_width/2, bottom=screen_height)
+        self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
 
         #items to display setup
         self.buy_button:UiButton = UiButton(button_text='Buy', button_func=self._buy, func_arg=None, refrence_rect=self.rect, topleft_offset=(403,22))
