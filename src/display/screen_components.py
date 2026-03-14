@@ -1,6 +1,7 @@
 import pygame
 from pygame.surface import Surface
 from pygame.sprite import Sprite
+from pygame.rect import Rect
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
 
@@ -31,10 +32,10 @@ class Overlay(Sprite):
     def _update_textboxes(self) -> None:
         if self in overlay_sprites and (self.textboxes not in overlay_sprites):
             overlay_sprites.add(self.textboxes)
-        self.gold.text = str(self.master.gold)
-        self.bearing.text = (str(self.master.gps_coord))
-        self.storage.text = self.master.get_inv_level()
-        self.knots.text = str(self.master.knotical_speed)
+        self.gold.set_text(str(self.master.gold))
+        self.bearing.set_text(str(self.master.gps_coord))
+        self.storage.set_text(self.master.get_inv_level())
+        self.knots.set_text(str(self.master.knotical_speed))
     
 
     def position_crew_icons(self, crew_list):
@@ -67,7 +68,7 @@ class UiButton(Sprite):
         self.z = z
         self.function = button_func
         self.arg = func_arg
-        self.textboxes = [Textbox(self, text=button_text)]
+        self.textboxes = [Textbox(self, text=button_text, max_rect=refrence_rect)]
 
     def update(self, dt) -> None:
         self._update_textboxes()
@@ -88,7 +89,7 @@ class UiButton(Sprite):
     def click(self) -> None:
         self.function(self.arg)
 
-class Icon_bg(Sprite):
+class IconBG(Sprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
         self.image = pygame.image.load('assets\images\HUD/icon_bg.png').convert_alpha()
@@ -102,12 +103,12 @@ class Icon_bg(Sprite):
 
     def update(self, dt): 
         if self.subject:
-            self.subject.rect.center = self.rect.center
-            self.value_display.text=str(self.subject.value)
+            self.subject.sprite.rect.center = self.rect.center
+            self.value_display.set_text(str(self.subject.value))
             self.value_display.rect.center = (self.rect.x, self.rect.y)
         else:
             #remove the value display from the display group
-            self.value_display.text=''
+            self.value_display.set_text('')
     
     def click(self, toggle=None):
         #define what happens when the mouse clicks while in the rect boundary of an icon bg.
@@ -138,11 +139,11 @@ class UpgradeIconBg(Sprite):
     def update(self, dt): 
         if self.subject:
             self.subject.rect.center = self.rect.center
-            self.value_display.text=str(self.subject.value)
+            self.value_display.set_text(str(self.subject.value))
             self.value_display.rect.center = (self.rect.x-5, self.rect.y)
         else:
             #remove the value display from the display group
-            self.value_display.text=''
+            self.value_display.set_text('')
             
     def deselect(self):
         #this will be called any time we need the inventory item to be deselected by any process
@@ -245,7 +246,7 @@ class Generic(Sprite):
         super().update()
         
 class Textbox(Sprite):
-    def __init__(self, reference_sprite:Sprite, fontsize=12, z = overlay_layers['text'], offset=(0,0), text='', position='center'):
+    def __init__(self, reference_sprite:Sprite, max_rect:Rect, fontsize=12, z = overlay_layers['text'], offset=(0,0), text='', position='center'):
         """
     Display text on screen.
 
@@ -274,6 +275,7 @@ class Textbox(Sprite):
         self.text = text
         self.color = 'black'
         self.z = z
+        self.max_rect = max_rect
         self.is_active = False
         self.position = position
         self.offset = offset
@@ -285,6 +287,19 @@ class Textbox(Sprite):
         self.font = pygame.font.Font('assets/fonts/standard.ttf', self.fontsize)
         self.image = self.font.render(self.text, False, (0,0,0,0))
         self.rect = self.image.get_rect()
+        self._resize()
+        
+    def set_text(self, text:str) -> None:
+        self.text = text
+        self.image = self.font.render(self.text.title(), True, self.color)
+        self._resize()
+
+    def _resize(self) -> None:
+        print(self.rect.width + 1)
+        print(self.max_rect.width)
+        width_ratio = self.max_rect.width / (self.rect.width + 1)
+        height_ratio = self.max_rect.height / (self.rect.height + 1)
+        pygame.transform.scale(self.image, (width_ratio, height_ratio))
 
     def set_position(self) -> None:
         padding = 5
@@ -313,9 +328,7 @@ class Textbox(Sprite):
 
     def update(self, dt):
         if self.master not in overlay_sprites:
-            overlay_sprites.remove(self)
-        self.image = self.font.render(self.text.title(), True, self.color)
-
+            self.kill()
 
 class CrewQuartersHUD(Sprite):
     """A class to create and manage the UI for displaying crew on the HUD and in game menus
@@ -329,12 +342,9 @@ class CrewQuartersHUD(Sprite):
         self.rect = self.image.get_rect(left=0, bottom=640)
         self.z = overlay_layers['hud']
         self.max_crew:int = 18
-        self.current_crew_slots:list[Generic] = []
+        self.current_crew_slots:list[CrewUiSlot] = []
         self.crew_slot_positions:dict[int, tuple[int,int]] = {}
         self._set_crew_slot_positions()
-        for i in range(self.max_crew):
-            self.create_crew_space()
-        self._position_crew_slots()
     
     def _set_crew_slot_positions(self) -> None:
         x_padding = 4
@@ -358,17 +368,26 @@ class CrewQuartersHUD(Sprite):
         for slot_index, slot in enumerate(self.current_crew_slots):
             slot.rect.topleft = self.crew_slot_positions[slot_index+1]
 
-    def create_crew_space(self) -> None:
+    def _create_crew_space(self) -> None:
         """Create an empty spot in UI for a crew member
         
         """
         if len(self.current_crew_slots) < self.max_crew:
             new_slot:CrewUiSlot = CrewUiSlot()
             self.current_crew_slots.append(new_slot)
+        else:
+            raise IndexError
 
-    def assign_crew(self, crew_member) -> None:
-        pass
-
+    def populate(self, crew_list:list) -> None:
+        self.current_crew_slots = [] # clear the list
+        for index, crew in enumerate(crew_list):
+            try:
+                self._create_crew_space()
+                self.current_crew_slots[index].fill_slot(crew)
+                
+            except IndexError as ie:
+                print("Crew Quarters is full")
+        self._position_crew_slots()
 
 class CrewUiSlot(Sprite):
     def __init__(self) -> None:
@@ -377,21 +396,40 @@ class CrewUiSlot(Sprite):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect()
         self.z = overlay_layers['hud_elements']
-        crew_icon_start_pixel = (1, 17) # coord of image for topleft of rect of crew icon
-        crew_title_start_pixel = (2, 2) # coord of image for topleft of textbox
-        self.crew_title_textbox:Textbox = Textbox(self, fontsize=9, offset=crew_title_start_pixel, position='relative')
+        self.crew_icon_top_pixel = 0
+        self.crew_icon_left_pixel = 0
+        self.crew_title_top_pixel = 0
+        self.crew_title_left_pixel = 0
+        self.crew_title_textbox:Textbox = Textbox(self, 
+                                                  fontsize=9, 
+                                                  offset=(self.crew_title_left_pixel, self.crew_title_top_pixel), 
+                                                  position='relative')
         self.place_holder_textbox_text = "EMPTY"
-        self.crew_title_textbox.text = self.place_holder_textbox_text
+        self.crew_title_textbox.set_text(self.place_holder_textbox_text)
         overlay_sprites.add(self.crew_title_textbox)
         self.place_holder_crew_sprite:Surface = Surface((32,32))
-        self.place_holder_crew_sprite.fill('yellow')
+        self.place_holder_crew_sprite.fill('lightgray')
         self.crew_image_sprite:Generic = Generic(overlay_sprites,
                                                  self.place_holder_crew_sprite, 
-                                                 offset=crew_icon_start_pixel,
+                                                 offset=(self.crew_icon_left_pixel, self.crew_icon_top_pixel),
                                                  relative_rect=self.rect)
 
     def update(self, *args, **kwargs):
         if  not self.rect.colliderect(self.crew_image_sprite.rect):
-            self.crew_image_sprite.set_position()
-            self.crew_title_textbox.set_position()
+            self.crew_icon_top_pixel = 17 + self.rect.top 
+            self.crew_icon_left_pixel = 1 + self.rect.left 
+            self.crew_title_top_pixel = 2 + self.rect.top 
+            self.crew_title_left_pixel = 2 + self.rect.left
+            self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
+            self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
+            self.crew_title_textbox.rect.top = self.crew_title_top_pixel
+            self.crew_title_textbox.rect.left = self.crew_title_left_pixel
         return super().update(*args, **kwargs)
+    
+    def fill_slot(self, crew_member) -> None:
+        self.crew_image_sprite.kill()
+        self.crew_image_sprite = crew_member.sprite
+        overlay_sprites.add(crew_member.sprite)
+        self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
+        self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
+        self.crew_title_textbox.set_text(crew_member.role)

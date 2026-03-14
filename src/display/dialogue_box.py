@@ -5,7 +5,7 @@ from pygame.surface import Surface
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
 from src.event_managing import EVENT_HANDLER
-from src.overlays.screen_components import Textbox, Generic
+from src.display.screen_components import Textbox, Generic
 from src.characters.crew import Crew
 from src.story.dialogue.generic_dialogue import get_dialogue
 
@@ -23,7 +23,7 @@ class DialogBox(Sprite):
         self.text:str
         self.image = pygame.image.load('assets\images\HUD\dialog_box.png')
         self.rect = self.image.get_rect(topleft=self.screen_offset)
-        self.text_box = Textbox(self, self.fontsize, offset=(100,0), position='middleleft')
+        self.text_box = Textbox(self, max_rect=self.rect, fontsize=self.fontsize, offset=(100,0), position='middleleft')
         self.speaker_space_image = Surface((70,70))
         self.speaker_space=Generic(overlay_sprites
                                  ,self.speaker_space_image
@@ -131,7 +131,7 @@ class DialogBox(Sprite):
         if self.text_on_screen_index < 0: #cap min value of index at 0
             self.text_on_screen_index = 0
 
-        self.text_box.text = self.shown_characters[int(self.text_on_screen_index)]
+        self.text_box.set_text(self.shown_characters[int(self.text_on_screen_index)])
 
     def _update_relations(self, player_crew:Crew, interactee:Crew) -> dict:
         """

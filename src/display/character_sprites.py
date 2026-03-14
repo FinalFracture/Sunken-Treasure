@@ -5,14 +5,13 @@ from pygame.rect import Rect
 from pygame.sprite import Sprite, spritecollide
 from pygame.surface import Surface
 
-from src.overlays.screen_components import Generic
 from src.utils.support import import_folder
 from src.utils.settings import *
 from src.utils.cameras import collidable_sprites, all_sprites, cameragroup_layers, overlay_sprites
 
 character_image_paths = 'assets\images\characters\\'
 
-class Character_Sprite(Sprite):
+class CharacterSprite(Sprite):
     """
     A sprite class that all overworld character sprites will use. 
     

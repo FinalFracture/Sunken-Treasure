@@ -2,8 +2,8 @@ import pygame
 from pygame.sprite import Sprite
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers
-from src.overlays.screen_components import Textbox
-from src.overlays.screen_components import UpgradeIconBg
+from src.display.screen_components import Textbox
+from src.display.screen_components import UpgradeIconBg
 
 class UpgradeMenu(Sprite):
     def __init__(self) -> None:

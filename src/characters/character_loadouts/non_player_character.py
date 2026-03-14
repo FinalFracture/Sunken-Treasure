@@ -6,15 +6,15 @@ from src.utils.settings import *
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites
 from src.characters.character_loadouts import Character
-from src.overlays.character_sprites import Character_Sprite
+from src.display.character_sprites import CharacterSprite
 from src.characters.crew import Crew
-from src.story.dialogue.dialogue_box import DIALOGUE
+from src.display.dialogue_box import DIALOGUE
 
 class Non_Player_Character(Character):
     """The non player character class will encompass all self moving objects that are not the player."""
     def __init__(self, ship_type, starting_pos=(0,0)):
         super().__init__(ship_type)
-        self.sprite:Character_Sprite = Character_Sprite(self, starting_pos, ship_type)
+        self.sprite:CharacterSprite = CharacterSprite(self, starting_pos, ship_type)
         #initialization setup
         self._npc_setup()
         

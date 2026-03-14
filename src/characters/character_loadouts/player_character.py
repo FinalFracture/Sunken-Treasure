@@ -4,27 +4,26 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
+from src.display import CharacterSprite, InventoryMenu, HUD
 from src.characters.character_loadouts import Character, BOAT_STATS
-from src.overlays.character_sprites import Character_Sprite
-from src.overlays.screen_components import Overlay
-from src.overlays.Inventory_menu import InventoryMenu
 
-class Player_Character(Character): 
+
+
+class PlayerCharacter(Character): 
     def __init__(self, game, ship_type):
         super().__init__(ship_type)
         self.game = game
-        self.sprite = Character_Sprite(self, starting_pos=(0,0), ship_type=ship_type)
+        self.sprite = CharacterSprite(self, starting_pos=(0,0), ship_type=ship_type)
         self.stats = BOAT_STATS[ship_type]
         self.inventory_ui = InventoryMenu(self, (5, 15), self.stats['inv_pages'], self.stats['crew_slots'])
-        self.overlay = Overlay(self)
         self.timers = {}
         self.gps_coord:tuple[float, float] = (0,0)
         self.speed = 360
         self.knotical_speed = 0
         self.gold = 0
-        self.overlay.position_crew_icons(self.crew_list)
         self.is_clicking = False
         self.is_key_pressed = False
+        HUD.crew_quarters_hud.populate(self.crew_list)
 
     def _interact(self):
         #check for interactions with the worlds objects
@@ -56,7 +55,7 @@ class Player_Character(Character):
 
         def _single_click_operations():
             for crew in self.crew_list:
-                if crew.rect.collidepoint(mouse_pos):
+                if crew.sprite.rect.collidepoint(mouse_pos):
                     self.is_clicking = True
                     key_num = self.crew_list.index(crew) + 1
                     _activate_crew(key_num)
@@ -122,7 +121,6 @@ class Player_Character(Character):
             self.state = self.inventory_ui.show_menu(self.crew_list)
             screen_update(focus=self)
         Timer.resume_all()
-        self.overlay.position_crew_icons(self.crew_list)
             
     def add_to_inventory(self, item):
         return self.inventory_ui.add_to_inventory(item)

@@ -1,5 +1,5 @@
 import pygame
-from src.overlays.screen_components import Textbox, UiButton, Icon_bg
+from src.display.screen_components import Textbox, UiButton, IconBG
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers
 
@@ -100,8 +100,8 @@ class TradeMenu(pygame.sprite.Sprite):
         self._update_carts()
 
     def _update_carts(self) -> None:
-        interactor_subjected_slots:list[Icon_bg] = [slot for slot in self.interactor.inventory_ui.inventory_slots.values() if slot.subject is not None ]
-        owner_subjected_slots:list[Icon_bg] = [slot for slot in self.master.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+        interactor_subjected_slots:list[IconBG] = [slot for slot in self.interactor.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+        owner_subjected_slots:list[IconBG] = [slot for slot in self.master.inventory_ui.inventory_slots.values() if slot.subject is not None ]
 
         for slot in interactor_subjected_slots:
             if slot.subject.selected and slot.subject not in self.sell_cart:
@@ -148,12 +148,12 @@ class TradeMenu(pygame.sprite.Sprite):
         sell_cart_value = sum(item.value for item in self.sell_cart)
         buy_cart_value = sum(item.value for item in self.buy_cart)
         cart_value = sell_cart_value - buy_cart_value
-        self.gold_textbox.text = str(cart_value)
+        self.gold_textbox.set_text(str(cart_value))
         error_message = 'Missing Funds'
         if int(cart_value) < 0 and self.interactor.gold - abs(int(cart_value)) < 0 :
             error_message = 'Missing Funds'
             self.gold_textbox.color = 'red'
-            self.gold_textbox.text = error_message
+            self.gold_textbox.set_text(error_message)
         elif int(cart_value) == 0:
             self.gold_textbox.color = 'black'
         elif int(cart_value) < 0:

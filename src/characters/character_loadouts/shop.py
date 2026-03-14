@@ -1,8 +1,8 @@
 import pygame
 import random
 from src.utils.settings import *
-from src.overlays.trade_menu import TradeMenu
-from src.overlays.Inventory_menu import InventoryMenu
+from src.display.trade_menu import TradeMenu
+from src.display.Inventory_menu import InventoryMenu
 from src.characters.crew import *
 from src.characters.character_loadouts.non_player_character import Non_Player_Character
 

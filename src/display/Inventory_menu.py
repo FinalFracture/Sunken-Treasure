@@ -1,8 +1,6 @@
 import pygame
 from math import floor
-from src.mechanics.tools import GameItem
-from src.characters.crew import Crew
-from src.overlays.screen_components import Icon_bg, ItemStatBox, UiButton
+from src.display import IconBG, ItemStatBox, UiButton
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
 from src.event_managing import EVENT_HANDLER
@@ -14,7 +12,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.z:int = overlay_layers['menu']
         self.master:pygame.sprite.Sprite = owner
         self.key_pressed:bool = False
-        self.interactable_slots:list[Icon_bg] = []
+        self.interactable_slots:list[IconBG] = []
         self._menu_setup(top_left_pos, inv_pages, crew_slots)
         self.stop_showing = False
         overlay_sprites.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
@@ -31,7 +29,7 @@ class InventoryMenu(pygame.sprite.Sprite):
                 slot_num = 0
                 for row_num in range(self.inv_page_rows):
                     for col_num in range(self.inv_page_cols):
-                        slot = Icon_bg(None, (0,0))
+                        slot = IconBG(None, (0,0))
                         overlay_sprites.remove(slot)
                         slot_width = slot.rect.width
                         slot_height = slot.rect.height
@@ -47,7 +45,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.inv_page_rows = 8
         self.inv_page_cols = 6
         self.full_slots = 0
-        self.all_slots:list[Icon_bg] = []
+        self.all_slots:list[IconBG] = []
         self.image = pygame.image.load('assets\images\hud/menu_bg.png')
         self.rect = self.image.get_rect(topleft = top_left_pos)
         self.exit_button = pygame.Rect(0,0, 11, 11)
@@ -76,9 +74,9 @@ class InventoryMenu(pygame.sprite.Sprite):
 
         #items to display setup
         self.menu_ui = [self, self.item_stats_display, self.sidebar, self.crew_menu] + self.item_stats_display.ui_elements
-        self.inv_pages:dict[int, dict[int, Icon_bg]] = {}
+        self.inv_pages:dict[int, dict[int, IconBG]] = {}
         _setup_inv_slots()
-        self.active_inv_page:dict[int, Icon_bg] = self.inv_pages[self.inv_page_index]
+        self.active_inv_page:dict[int, IconBG] = self.inv_pages[self.inv_page_index]
         
     def show_menu(self, crew_list:list|None = None) -> None:
         """ display to the screen and add to players inventory"""
@@ -246,7 +244,7 @@ class InventoryMenu(pygame.sprite.Sprite):
             slot.click(toggle=0)
         self.reorder()
     
-    def add_to_inventory(self, item:GameItem) -> bool:
+    def add_to_inventory(self, item) -> bool:
         """
         Try to add an item to players inventory. If inventory is full, return false
 
@@ -279,7 +277,7 @@ class CrewQuarters(pygame.sprite.Sprite):
     def _setup_crew_slots(self, crew_slots):
         #Crew slots setup
         self.crew_cap = crew_slots
-        self.crew_slots:list[Icon_bg] = []
+        self.crew_slots:list[IconBG] = []
         self.max_slot_rows = 3
         self.max_slot_cols = 9
 
@@ -289,7 +287,7 @@ class CrewQuarters(pygame.sprite.Sprite):
         for row_num in range(self.max_slot_rows):
             for col_num in range(self.max_slot_cols):
                 if slot_num < self.crew_cap:
-                    slot = Icon_bg(None, (0,0))
+                    slot = IconBG(None, (0,0))
                     overlay_sprites.remove(slot)
                     slot_width = slot.rect.width
                     slot_height = slot.rect.height
@@ -305,13 +303,13 @@ class CrewQuarters(pygame.sprite.Sprite):
                 overlay_sprites.remove(slot.subject)
                 slot.subject = None #clear what is stored in each slot.
 
-    def show(self, crew_list:list[Crew]) -> list[Icon_bg]:
+    def show(self, crew_list:list) -> list[IconBG]:
         
         for index, crew_slot in enumerate(self.crew_slots):
             overlay_sprites.add(crew_slot)
             try:
                 crew_slot.subject = crew_list[index]
-                crew_slot.subject.rect.center = crew_slot.rect.center
+                crew_slot.subject.sprite.rect.center = crew_slot.rect.center
             except IndexError:
                 pass # 
         return self.crew_slots
