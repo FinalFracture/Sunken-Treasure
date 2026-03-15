@@ -46,7 +46,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.inv_page_cols = 6
         self.full_slots = 0
         self.all_slots:list[IconBG] = []
-        self.image = pygame.image.load('assets\images\hud/menu_bg.png')
+        self.image = pygame.image.load('assets/images/hud/menu_bg.png')
         self.rect = self.image.get_rect(topleft = top_left_pos)
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))
@@ -321,7 +321,7 @@ class CrewQuarters(pygame.sprite.Sprite):
 class Clipboard(pygame.sprite.Sprite): 
     def __init__(self, offset:tuple[int], owner:pygame.sprite.Sprite, z=overlay_layers['menu'], buttons=None) -> None:
         super().__init__(overlay_sprites)
-        image_path = 'assets\images\hud/clipboard.png'
+        image_path = 'assets/images/hud/clipboard.png'
         self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(topleft=offset)
         self.z = z

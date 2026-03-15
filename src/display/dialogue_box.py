@@ -21,7 +21,7 @@ class DialogBox(Sprite):
         self.z = overlay_layers['menu']
         self.dialogue:list[str]
         self.text:str
-        self.image = pygame.image.load('assets\images\HUD\dialog_box.png')
+        self.image = pygame.image.load('assets/images/hud/dialog_box.png')
         self.rect = self.image.get_rect(topleft=self.screen_offset)
         self.text_box = Textbox(self, max_rect=self.rect, fontsize=self.fontsize, offset=(100,0), position='middleleft')
         self.speaker_space_image = Surface((70,70))

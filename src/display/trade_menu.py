@@ -18,7 +18,7 @@ class TradeMenu(pygame.sprite.Sprite):
     def _menu_setup(self) -> None:
         """set the position for each element of the menu and assign its logic"""
         #menu setup
-        self.image = pygame.image.load('assets\images\hud/shop_bar.png')
+        self.image = pygame.image.load('assets/images/hud/shop_bar.png')
         self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
 
         #items to display setup

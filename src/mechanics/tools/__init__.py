@@ -8,8 +8,8 @@ from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
 from src.display import Generic, ItemSprite
 
-crew_image_paths = 'assets\images\crew/'
-item_image_paths = 'assets\images\items'
+crew_image_paths = 'assets/images/crew/'
+item_image_paths = 'assets/images/items'
 
 item_stats:dict[str:dict] = {
    'fish':{
@@ -492,7 +492,7 @@ def _import_crew_assets():
   for role, crew_stat_dict in item_stats['crew'].items():
     for status in _STATUSES:
       full_path = crew_image_paths + role +'/' + status
-      crew_stat_dict[status] = import_folder(full_path)
+      crew_stat_dict[status] = import_folder(full_path, debug=True)
 
 def _import_game_item_assets() -> None:
    for type_name, item_type in item_stats.items():   

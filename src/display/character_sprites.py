@@ -9,7 +9,7 @@ from src.utils.support import import_folder
 from src.utils.settings import *
 from src.utils.cameras import collidable_sprites, all_sprites, cameragroup_layers, overlay_sprites
 
-character_image_paths = 'assets\images\characters\\'
+character_image_paths = 'assets/images/characters//'
 
 class CharacterSprite(Sprite):
     """

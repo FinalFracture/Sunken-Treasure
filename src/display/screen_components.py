@@ -9,7 +9,7 @@ class Overlay(Sprite):
     def __init__(self, owner):
         super().__init__(overlay_sprites)
         self.master = owner
-        self.image = pygame.image.load('assets\images\hud/heads_up.png').convert_alpha()
+        self.image = pygame.image.load('assets/images/hud/heads_up.png').convert_alpha()
         self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
         self.z = overlay_layers['hud']
         self.gold = Textbox(self, z=overlay_layers['hud_elements'], offset=(135, 10), position='relative')
@@ -50,7 +50,7 @@ class ItemStatBox(Sprite):
     #while the inventory menu is active
     def __init__(self, relative_rect: pygame.rect.Rect, offset: tuple, z=overlay_layers['menu_aux']):    
         super().__init__(overlay_sprites)
-        self.image = pygame.image.load('assets\images\HUD/item_stat_textbox.png')
+        self.image = pygame.image.load('assets/images/HUD/item_stat_textbox.png')
         self.rect = self.image.get_rect(topleft = (relative_rect.x + offset[0], relative_rect.y + offset[1]))
         self.item_name_display = HoverMessage(self, offset = (10, 5), fontsize=12)
         self.item_value_display = HoverMessage(self, offset = (10,20), fontsize=12)
@@ -82,7 +82,7 @@ class UiButton(Sprite):
         self.rect.y = reference_rect.y + offset[1]
 
     def _image_setup(self) -> pygame.Surface:
-        image_path = 'assets\images\HUD/sidebar.png'
+        image_path = 'assets/images/HUD/sidebar.png'
         image = pygame.image.load(image_path)
         return image
 
@@ -92,12 +92,12 @@ class UiButton(Sprite):
 class IconBG(Sprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
-        self.image = pygame.image.load('assets\images\HUD/icon_bg.png').convert_alpha()
+        self.image = pygame.image.load('assets/images/HUD/icon_bg.png').convert_alpha()
         self.rect = self.image.get_rect(center = pos)
         self.subject = subject
         self.z = z
         self.indicator:bool = None
-        self.value_display = Textbox(self, fontsize= 8, z=overlay_layers['text'])
+        self.value_display = Textbox(self, max_rect=self.rect, fontsize= 8, z=overlay_layers['text'])
         self.indicator:MenuIndicator = MenuIndicator(self.rect)
         overlay_sprites.remove(self.indicator)
 
@@ -128,7 +128,7 @@ class IconBG(Sprite):
 class UpgradeIconBg(Sprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
         super().__init__(overlay_sprites)
-        self.image = pygame.image.load('assets\images\HUD/upgrade_icon_bg.png').convert_alpha()
+        self.image = pygame.image.load('assets/images/HUD/upgrade_icon_bg.png').convert_alpha()
         self.rect = self.image.get_rect(center = pos)
         self.subject = subject
         self.z = z
@@ -209,7 +209,7 @@ class HoverMessage(Sprite):
         self._text_setup()
 
     def _text_setup(self):
-        self.font = pygame.font.Font('assets\\fonts\\standard.ttf', self.fontsize)
+        self.font = pygame.font.Font('assets//fonts//standard.ttf', self.fontsize)
         self.image = self.font.render(self.text, False, (0,0,0,0))
         self.rect = self.image.get_rect(topleft = (self.relative_surface.x + self.offset.x, self.relative_surface.y + self.offset.y))
 
@@ -401,8 +401,9 @@ class CrewUiSlot(Sprite):
         self.crew_title_top_pixel = 0
         self.crew_title_left_pixel = 0
         self.crew_title_textbox:Textbox = Textbox(self, 
-                                                  fontsize=9, 
-                                                  offset=(self.crew_title_left_pixel, self.crew_title_top_pixel), 
+        max_rect=Rect(0,0,32,16),
+        fontsize=9, 
+        offset=(self.crew_title_left_pixel, self.crew_title_top_pixel), 
                                                   position='relative')
         self.place_holder_textbox_text = "EMPTY"
         self.crew_title_textbox.set_text(self.place_holder_textbox_text)
