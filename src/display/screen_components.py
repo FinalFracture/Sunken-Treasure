@@ -295,8 +295,6 @@ class Textbox(Sprite):
         self._resize()
 
     def _resize(self) -> None:
-        print(self.rect.width + 1)
-        print(self.max_rect.width)
         width_ratio = self.max_rect.width / (self.rect.width + 1)
         height_ratio = self.max_rect.height / (self.rect.height + 1)
         pygame.transform.scale(self.image, (width_ratio, height_ratio))

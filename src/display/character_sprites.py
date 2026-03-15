@@ -189,7 +189,6 @@ class CharacterSprite(Sprite):
         self.status_rect.center = (self.rect.centerx, self.rect.top)
         self.frame_index +=4 *dt
         self.animation_string = self.pointing_dir + self.selected_tool
-        # print(self.animation_string)
 
         if self.frame_index >= len(self.animations[self.animation_string]):
             self.frame_index = 0

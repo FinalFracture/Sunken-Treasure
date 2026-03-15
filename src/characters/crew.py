@@ -62,6 +62,5 @@ class Crew:
         self.image = self.stats[self.status][0]
     
     def update(self, dt):
-        #print(self.z)
         if self.status == 'selected':
             self.tool.use()
