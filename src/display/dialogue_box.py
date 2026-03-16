@@ -23,7 +23,8 @@ class DialogBox(Sprite):
         self.text:str
         self.image = pygame.image.load('assets/images/hud/dialog_box.png')
         self.rect = self.image.get_rect(topleft=self.screen_offset)
-        self.text_box = Textbox(self, max_rect=self.rect, fontsize=self.fontsize, offset=(100,0), position='middleleft')
+        max_rect = self.rect.scale_by(0.5, 0.3)
+        self.text_box = Textbox(self, max_rect=max_rect, fontsize=self.fontsize, offset=(100,0), position='middleleft', text="Dialoge Box")
         self.speaker_space_image = Surface((70,70))
         self.speaker_space=Generic(overlay_sprites
                                  ,self.speaker_space_image
@@ -49,7 +50,8 @@ class DialogBox(Sprite):
         self._change_dialogue()
         
     def update(self, dt):
-        pass
+        self.text_box.rect.left = self.rect.left + 100
+        self.text_box.rect.centery = self.rect.centery
 
     def run(self) -> str:
         

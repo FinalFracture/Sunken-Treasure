@@ -76,7 +76,7 @@ item_stats:dict[str:dict] = {
             ,'selected':[]
             ,'unselected':[]
     },
-        'rockhound': {
+        'miner': {
                         'name': ''
                         ,'value':'C'
                         ,'tool_modifier': 0
@@ -492,7 +492,7 @@ def _import_crew_assets():
   for role, crew_stat_dict in item_stats['crew'].items():
     for status in _STATUSES:
       full_path = crew_image_paths + role +'/' + status
-      crew_stat_dict[status] = import_folder(full_path, debug=True)
+      crew_stat_dict[status] = import_folder(full_path)
 
 def _import_game_item_assets() -> None:
    for type_name, item_type in item_stats.items():   

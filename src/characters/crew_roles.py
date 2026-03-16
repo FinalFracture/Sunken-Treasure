@@ -39,7 +39,7 @@ ROLES = {
             'we': 'the crew'
         }
     },
-    'rockhound': {
+    'miner': {
         'vocabulary':{
             'stock': 'picks and chisels',
             'wares': 'ore samples',
