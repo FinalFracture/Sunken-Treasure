@@ -6,7 +6,7 @@ from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
 from src.event_managing import EVENT_HANDLER
 from src.overlays.screen_components import Textbox, Generic
-from src.characters.crew import Crew
+from src.mechanics import Crew
 from src.story.dialogue.generic_dialogue import get_dialogue
 
 class DialogBox(Sprite):

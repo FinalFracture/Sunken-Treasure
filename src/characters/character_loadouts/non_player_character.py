@@ -7,7 +7,7 @@ from src.utils.timer import Timer
 from src.utils.cameras import all_sprites
 from src.characters.character_loadouts import Character
 from src.overlays.character_sprites import Character_Sprite
-from src.characters.crew import Crew
+from src.mechanics import Crew
 from src.story.dialogue.dialogue_box import DIALOGUE
 
 class Non_Player_Character(Character):

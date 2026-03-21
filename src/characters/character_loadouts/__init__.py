@@ -1,21 +1,36 @@
-from src.characters.crew import Crew
+from src.mechanics import Crew, build_crew_member
 from src.mechanics.tools import Tool
 
 BOAT_STATS = {
     'galleon':{
-        'speed':30,
-        'crew_slots':6,
+        'speed':40,
+        'crew_slots':3,
         'inv_pages':6
     },
     'raft':{
         'speed':30,
-        'crew_slots':2,
+        'crew_slots':1,
         'inv_pages':1
     },
     'sloop':{
         'speed':50,
-        'crew_slots':3,
+        'crew_slots':2,
         'inv_pages':2
+    },
+    'canoe':{
+        'speed':50,
+        'crew_slots':2,
+        'inv_pages':1
+    },
+    'troller':{
+        'speed':50,
+        'crew_slots':2,
+        'inv_pages':2
+    },
+    'frigate':{
+        'speed':50,
+        'crew_slots':3,
+        'inv_pages':6
     }
 }
 
@@ -25,7 +40,8 @@ class Character():
         self.stats = BOAT_STATS[ship_type]
         self.gold:int = 50
         self.timers:dict = {}
-        self.crew_list:list[Crew] = [Crew(crew_role='rockhound',master=self), Crew(crew_role='angler',master=self)] 
+        self.crew_list:list[Crew] = [build_crew_member(self, 'Angler'),build_crew_member(self, 'Miner')] 
+        print(('Debugging:', self.crew_list))
         self.active_crew:Crew = None
         self.state = 'normal'
         self.animations:dict = {'left': [], 'right': []}

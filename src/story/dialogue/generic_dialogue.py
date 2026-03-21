@@ -1,8 +1,5 @@
 import random
-from src.characters.crew import Crew
-from src.characters.crew_roles import ROLES
-from src.characters.crew_archetypes import ARCHETYPES
-
+from src.mechanics.crew import Crew, role_vocabularies, archetype_vocabularies
 
 ## ---------- Insertion characters ---------------##
 # @ = insert a crew name
@@ -326,10 +323,10 @@ def _translate(dialogue_string:str, character:Crew) -> str:
     new_dialogue = ''
     for word in words:
         new_word = word
-        if word in ARCHETYPES[character.archetype]['vocabulary'].keys():
-            new_word = ARCHETYPES[character.archetype]['vocabulary'].get(word)
-        elif word in ROLES[character.role]['vocabulary'].keys():
-            new_word = ROLES[character.role]['vocabulary'].get(word)
+        if word in archetype_vocabularies[character.archetype].keys():
+            new_word = archetype_vocabularies[character.archetype].get(word)
+        elif word in role_vocabularies[character.role].keys():
+            new_word = role_vocabularies[character.role].get(word)
         new_dialogue += new_word + " "
     new_dialogue = new_dialogue[:-1] # cheap way to remove the unneeded empty space at the end
     new_dialogue += punctuation # add back the punctuation

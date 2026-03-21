@@ -37,12 +37,12 @@ class Overlay(Sprite):
         self.knots.text = str(self.master.knotical_speed)
     
 
-    def position_crew_icons(self, crew_list):
+    def position_crew_icons(self, crew_list:list):
         for member_number, member_role in enumerate(crew_list):
             self.crew_list[member_number] = member_role
-        for crew_index, crew_icon in self.crew_list.items():
-            overlay_sprites.add(crew_icon)
-            crew_icon.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
+        for crew_index, crew in self.crew_list.items():
+            overlay_sprites.add(crew.sprite)
+            crew.sprite.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
 
 class ItemStatBox(Sprite):
     #the sprite to display an items value, description, weight, and other values
