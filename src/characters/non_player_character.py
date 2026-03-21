@@ -5,7 +5,7 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites
-from src.characters.character_loadouts import Character
+from src.characters import Character
 from src.overlays.character_sprites import Character_Sprite
 from src.mechanics import Crew
 from src.story.dialogue.dialogue_box import DIALOGUE

@@ -2,9 +2,9 @@ import pygame
 from src.utils.settings import *
 from src.utils.cameras import screen_update
 from src.utils.timer import Timer
-from src.characters.character_loadouts.player_character import Player_Character
-from src.characters.character_loadouts.non_player_character import Non_Player_Character
-from src.characters.character_loadouts.shop import BoatShop
+from src.characters.player_character import Player_Character
+from src.characters.non_player_character import Non_Player_Character
+from src.characters.shop import BoatShop
 #from maps import Map
 from src.event_managing import EVENT_HANDLER
 

@@ -4,7 +4,7 @@ from src.utils.settings import *
 from src.overlays.trade_menu import TradeMenu
 from src.overlays.Inventory_menu import InventoryMenu
 from src.mechanics import Crew, build_crew_member
-from src.characters.character_loadouts.non_player_character import Non_Player_Character
+from src.characters.non_player_character import Non_Player_Character
 
 
 class BoatShop(Non_Player_Character):
