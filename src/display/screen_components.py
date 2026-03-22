@@ -104,11 +104,11 @@ class IconBG(Sprite):
     def update(self, dt): 
         if self.subject:
             self.subject.sprite.rect.center = self.rect.center
-            self.value_display.set_text=str(self.subject.rarity) if hasattr(self.subject,'rarity') else str(self.subject.value)
+            self.value_display.set_text(str(self.subject.rarity) if hasattr(self.subject,'rarity') else str(self.subject.value))
             self.value_display.rect.center = (self.rect.x, self.rect.y)
         else:
             #remove the value display from the display group
-            self.value_display.set_text('')
+            self.value_display.set_text(' ')
     
     def click(self, toggle=None):
         #define what happens when the mouse clicks while in the rect boundary of an icon bg.
@@ -298,7 +298,7 @@ class Textbox(Sprite):
     def _resize(self) -> None:
         width_ratio = self.max_rect.width / (self.rect.width + 1)
         height_ratio = self.max_rect.height / (self.rect.height + 1)
-        self.image = pygame.transform.scale_by(self.image, (width_ratio, height_ratio))
+        #self.image = pygame.transform.scale_by(self.image, (width_ratio, height_ratio))
 
     def set_position(self) -> None:
         padding = 5
