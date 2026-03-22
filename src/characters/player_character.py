@@ -4,7 +4,7 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
-from src.characters.character_loadouts import Character, BOAT_STATS
+from src.characters import Character, BOAT_STATS
 from src.overlays.character_sprites import Character_Sprite
 from src.overlays.screen_components import Overlay
 from src.overlays.Inventory_menu import InventoryMenu
@@ -14,6 +14,7 @@ class Player_Character(Character):
         super().__init__(ship_type)
         self.game = game
         self.sprite = Character_Sprite(self, starting_pos=(0,0), ship_type=ship_type)
+        self.type = 'generic'
         self.stats = BOAT_STATS[ship_type]
         self.inventory_ui = InventoryMenu(self, (5, 15), self.stats['inv_pages'], self.stats['crew_slots'])
         self.overlay = Overlay(self)
@@ -56,7 +57,7 @@ class Player_Character(Character):
 
         def _single_click_operations():
             for crew in self.crew_list:
-                if crew.rect.collidepoint(mouse_pos):
+                if crew.sprite.rect.collidepoint(mouse_pos):
                     self.is_clicking = True
                     key_num = self.crew_list.index(crew) + 1
                     _activate_crew(key_num)
@@ -66,7 +67,7 @@ class Player_Character(Character):
                 self.active_crew = self.crew_list[key_num-1]
                 self.deselect_tools(self.active_crew)
                 self.sprite.toggle_tool(self.active_crew.tool.name)
-                self.active_crew.toggle_status()
+                self.active_crew.toggle_selected()
             except IndexError as ie:
                 pass
                 # play reject sound
