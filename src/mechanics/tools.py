@@ -28,7 +28,7 @@ class Tool:
         find_accepted:bool = self.master.master.add_to_inventory(caught_item) # bool to determine if there is inv space
 
         if find_accepted == True:
-            current_find = Generic(all_sprites, self.master.master.sprite.status_rect.center, caught_item.image, z = cameragroup_layers['items'])
+            current_find = Generic(all_sprites, self.master.master.sprite.status_rect.center, caught_item.sprite.image, z = cameragroup_layers['items'])
         
             def _move_up(dt):
                 current_find.rect.y -= 75 * EVENT_HANDLER.dt

@@ -1,4 +1,5 @@
 from pygame import sprite, Surface, Rect
+from pygame.image import load
 from src.event_managing import EVENT_HANDLER
 from src.utils.support import import_folder
 from src.utils.settings import *
@@ -6,10 +7,10 @@ from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layer
 
 item_image_paths = 'assets/images/items/'
 
-item_stats:dict[str:dict] = {
+item_stats:dict[str, dict] = {
    'fish':{
         'tuna': {
-        'image': []
+        'image': None
         ,'value': 250
         ,'weight': 55
         ,'rarity': 'Rare' 
@@ -17,7 +18,7 @@ item_stats:dict[str:dict] = {
         ,'description2': '1 can feed a village.'
     }
         ,'catfish': {
-        'image': []
+        'image': None
         ,'value': 35
         ,'weight': 5
         ,'rarity': 'uncommon'
@@ -25,7 +26,7 @@ item_stats:dict[str:dict] = {
         ,'description2':'Easier to find while still.' 
     }
         ,'salmon': {
-        'image': []
+        'image': None
         ,'value': 23
         ,'weight': 3
         ,'rarity': 'common' 
@@ -33,7 +34,7 @@ item_stats:dict[str:dict] = {
         ,'description2':'Prefers colder climates.'
     }
         ,'carp': {
-    'image': []
+    'image': None
     ,'value': 5
     ,'weight': 8
     ,'rarity': 'common' 
@@ -43,7 +44,7 @@ item_stats:dict[str:dict] = {
     }
     ,'minerals':{
         'slate': {
-            'image': []
+            'image': None
             ,'value': 4
             ,'weight': 8
             ,'rarity': 'Common' 
@@ -51,7 +52,7 @@ item_stats:dict[str:dict] = {
             ,'description2': 'Can contain fossils.'
         }
         ,'sandstone': {
-            'image': []
+            'image': None
             ,'value': 2
             ,'weight': 5
             ,'rarity': 'Common' 
@@ -61,25 +62,28 @@ item_stats:dict[str:dict] = {
     }
 }
 
-def _import_game_item_assets() -> None:
-   for type_name, item_type in item_stats.items():   
-      if type_name != 'crew':
-         for item_name,  gameitem in item_type.items():
-            full_path = f'{item_image_paths}{type_name}/{item_name}'
-            gameitem['image'] = import_folder(full_path)
+for type_name, item_type in item_stats.items():   
+    for item_name,  gameitem in item_type.items():
+        full_path = f'{item_image_paths}/{item_name}.png'
+        gameitem['image'] = load(full_path).convert_alpha()
     
-
-class GameItem(sprite.Sprite):
-    def __init__(self, item_type:str, item_name:str, z=cameragroup_layers['items']) -> None:
+class GameItemSprite(sprite.Sprite):
+    def __init__(self, image:Surface) -> None:
         super().__init__(overlay_sprites)
+        self.image:Surface = image
+        self.rect:Rect = self.image.get_rect()
+        self.z = cameragroup_layers['items']
+        overlay_sprites.remove(self)
+
+
+class GameItem():
+    def __init__(self, item_type:str, item_name:str) -> None:
         self.item_name:str = item_name 
         self.item_type:str = item_type
         self.selected:bool = False
         self.stats:dict = item_stats[self.item_type][self.item_name].copy()
         self.name:str = item_name
-        self.image:Surface = self.stats['image'][0]
-        self.rect:Rect = self.image.get_rect()
-        self.z:int = z
-        overlay_sprites.remove(self)
         self.value = self.stats['value']
+        self.sprite = GameItemSprite(self.stats['image'])
+        self.description = (self.stats['description1'], self.stats['description2'])
  
