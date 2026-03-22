@@ -915,12 +915,17 @@ def generate_name() -> str:
 
 
 class CrewSprite(Sprite):
-    def __init__(self, tool_name:str) -> None:
+    def __init__(self, tool_name:str, master) -> None:
        super().__init__(overlay_sprites)
        self.image = load(image_paths + tool_name + '.png').convert_alpha()
        self.rect = self.image.get_rect()
        self.z=overlay_layers['menu_items']
+       self.master = master
        
+    def update(self, *args, **kwargs) -> None:
+       self.master.update()
+       #lets make a group called an update group to avoid this up chain calling
+       #children shoulnd't control parents
 
 class Crew:
     def __init__(self, role_attrs:dict[str, str]):
@@ -946,9 +951,10 @@ class Crew:
         self.rarity = role_attrs.get('rarity')
         self.description = [role_attrs.get('description1'), role_attrs.get('description2')]
         self.archetype = random.choice(list(archetype_vocabularies.keys()))
-        self.sprite = CrewSprite(role_attrs.get('tool'))
+        self.sprite = CrewSprite(role_attrs.get('tool'), self)
         overlay_sprites.remove(self.sprite)
         self.master = None
+        self.selected:bool = False
         self._init_skills()
 
     def _init_skills(self) -> None:
@@ -971,11 +977,21 @@ class Crew:
     def set_master(self, master) -> None:
        self.master = master
 
-    def select(self) -> None:
-        pass
+    def _select(self) -> None:
+        self.selected = True
 
     def deselect(self) -> None:
-       pass
+       self.selected = False
+
+    def update(self, *args, **kwargs) -> None:
+       if self.selected:
+          self.tool.use()
+
+    def toggle_selected(self) -> None:
+        if self.selected:
+            self.deselect()
+        else:
+            self._select()
 
 
 def build_crew_member(owner, role_name) -> Crew:
