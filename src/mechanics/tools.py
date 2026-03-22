@@ -52,13 +52,10 @@ class FishingPole(Tool):
     def use(self) -> None:
         """every 4 seconds, roll " a dice" to see if you find a fish"""
         self.frame_counter += 1 * EVENT_HANDLER.dt
-        print(self.frame_counter)
         if self.frame_counter > self.catch_interval:
             self._determine_find_rate()
             possible_finds = self._determine_finds()
             success_check = random.random()
-            print(success_check)
-            print(self.find_rate)
             if success_check <= self.find_rate:
                 find = GameItem('fish', random.choice(possible_finds))
                 self.retrieve(find)
