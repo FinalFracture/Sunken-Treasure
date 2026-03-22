@@ -11,6 +11,7 @@ class BoatShop(Non_Player_Character):
     def __init__(self, ship_type, starting_pos) -> None:
         super().__init__(starting_pos = starting_pos, ship_type=ship_type)
         self.speed = 20
+        self.type = 'shop'
         self.inventory_ui = InventoryMenu(self, (600, 15), self.stats['inv_pages'], self.stats['crew_slots'])
         self.trade_ui = TradeMenu(self)
 

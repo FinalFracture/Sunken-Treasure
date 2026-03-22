@@ -291,7 +291,7 @@ def get_dialogue(relation:dict) -> list[dict[str, Crew |str]]:
     player = relation['crew'][0]
     interactee = relation['crew'][1]
     convo_starter:Crew = random.choice([player, interactee])
-    dialogue_tree = general_dialog_trees[interactee.type]
+    dialogue_tree = general_dialog_trees[interactee.master.type]
     dialogue_branch = dialogue_tree[relation['relation_status']]
     dialogue:list[dict[str, Crew|str]] = []
     if convo_starter == player:
@@ -325,8 +325,8 @@ def _translate(dialogue_string:str, character:Crew) -> str:
         new_word = word
         if word in archetype_vocabularies[character.archetype].keys():
             new_word = archetype_vocabularies[character.archetype].get(word)
-        elif word in role_vocabularies[character.role].keys():
-            new_word = role_vocabularies[character.role].get(word)
+        elif word in role_vocabularies[character.class_type].keys():
+            new_word = role_vocabularies[character.class_type].get(word)
         new_dialogue += new_word + " "
     new_dialogue = new_dialogue[:-1] # cheap way to remove the unneeded empty space at the end
     new_dialogue += punctuation # add back the punctuation

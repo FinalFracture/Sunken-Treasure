@@ -388,7 +388,7 @@ used_names:list[str] = []
 
 crew_roles:list[dict] = [
    {
-        'role_name':'Angler',
+        'role_name':'angler',
         'tool':'fishing_pole',
         'class':'fisher',
         'rarity':'Common',
@@ -396,7 +396,7 @@ crew_roles:list[dict] = [
         'description2': 'to catch many fish.'
     },
     {
-        'role_name':'Harpooner',
+        'role_name':'harpooner',
         'tool':'harpoon_gun',
         'class':'fisher',
         'rarity':'Uncommon',
@@ -404,7 +404,7 @@ crew_roles:list[dict] = [
         'description2': 'Slow, but big catches.'
     },
     {
-        'role_name':'Netter',
+        'role_name':'netter',
         'tool':'fishing_net',
         'class':'fisher',
         'rarity':'Rare',
@@ -412,7 +412,7 @@ crew_roles:list[dict] = [
         'description2': 'quantities of sea life.'
     },
     {
-        'role_name':'Miner',
+        'role_name':'miner',
         'tool':'pickaxe',
         'class':'rockhound',
         'rarity':'Common',
@@ -420,7 +420,7 @@ crew_roles:list[dict] = [
         'description2': 'rocks to find ores.'
     },
     {
-        'role_name':'Powderman',
+        'role_name':'powderman',
         'tool':'tnt',
         'class':'rockhound',
         'rarity':'Uncommon',
@@ -428,7 +428,7 @@ crew_roles:list[dict] = [
         'description2': 'for numerous minerals.'
     },
     {
-        'role_name':'Quarrier',
+        'role_name':'quarrier',
         'tool':'stone_cutter',
         'class':'rockhound',
         'rarity':'Rare',
@@ -436,7 +436,7 @@ crew_roles:list[dict] = [
         'description2': 'precious gemstones.'
     },
     {
-        'role_name':'Quartermaster',
+        'role_name':'quartermaster',
         'tool':'clipboard',
         'class':'deckhand',
         'rarity':'Common',
@@ -444,7 +444,7 @@ crew_roles:list[dict] = [
         'description2': 'capacity and effeciency.'
     },
     {
-        'role_name':'Helmsman',
+        'role_name':'helmsman',
         'tool':'oar',
         'class':'deckhand',
         'rarity':'Uncommon',
@@ -452,7 +452,7 @@ crew_roles:list[dict] = [
         'description2': 'makes travel faster.'
     },
     {
-        'role_name':'Carpenter',
+        'role_name':'carpenter',
         'tool':'mallet_and_saw',
         'class':'deckhand',
         'rarity':'Rare',
@@ -460,7 +460,7 @@ crew_roles:list[dict] = [
         'description2': 'your vehicles.'
     },
     {
-        'role_name':'Cook',
+        'role_name':'cook',
         'tool':'cutlery',
         'class':'merchant',
         'rarity':'Common',
@@ -468,7 +468,7 @@ crew_roles:list[dict] = [
         'description2': 'and crewmates happy.'
     },
     {
-        'role_name':'Trader',
+        'role_name':'trader',
         'tool':'scale',
         'class':'merchant',
         'rarity':'Uncommon',
@@ -476,7 +476,7 @@ crew_roles:list[dict] = [
         'description2': 'bargains and deals.'
     },
     {
-        'role_name':'Tailor',
+        'role_name':'tailor',
         'tool':'needle_and_thread',
         'class':'merchant',
         'rarity':'Rare',
@@ -484,7 +484,7 @@ crew_roles:list[dict] = [
         'description2': 'dress crew to the nines.'
     },
     {
-        'role_name':'Scavenger',
+        'role_name':'scavenger',
         'tool':'sea_claw',
         'class':'artificer',
         'rarity':'Common',
@@ -492,7 +492,7 @@ crew_roles:list[dict] = [
         'description2': 'and bring up treasure.'
     },
     {
-        'role_name':'Curator',
+        'role_name':'curator',
         'tool':'seer_stone',
         'class':'artificer',
         'rarity':'Uncommon',
@@ -500,7 +500,7 @@ crew_roles:list[dict] = [
         'description2': 'and identify treasure.'
     },
     {
-        'role_name':'Explorer',
+        'role_name':'explorer',
         'tool':'compass',
         'class':'artificer',
         'rarity':'Rare',
@@ -508,7 +508,7 @@ crew_roles:list[dict] = [
         'description2': 'environmental phenomenon.'
     },
     {
-        'role_name':'Distiller',
+        'role_name':'distiller',
         'tool':'tap',
         'class':'islander',
         'rarity':'Rare',
@@ -516,7 +516,7 @@ crew_roles:list[dict] = [
         'description2': 'valuable liquids.'
     },
     {
-        'role_name':'Farmer',
+        'role_name':'farmer',
         'tool':'shovel_and_pail',
         'class':'islander',
         'rarity':'Rare',
@@ -524,7 +524,7 @@ crew_roles:list[dict] = [
         'description2': 'for a variety of uses.'
     },
     {
-        'role_name':'Hunter',
+        'role_name':'hunter',
         'tool':'spear',
         'class':'islander',
         'rarity':'Rare',
@@ -532,7 +532,7 @@ crew_roles:list[dict] = [
         'description2': 'herd all the animals.'
     },
     {
-        'role_name':'Spy',
+        'role_name':'spy',
         'tool':'lockpick',
         'class':'operative',
         'rarity':'Rare',
@@ -540,7 +540,7 @@ crew_roles:list[dict] = [
         'description2': 'and decieve crew.'
     },
     {
-        'role_name':'Cartographer',
+        'role_name':'cartographer',
         'tool':'map',
         'class':'operative',
         'rarity':'Common',
@@ -548,7 +548,7 @@ crew_roles:list[dict] = [
         'description2': "You'll never get lost."
     },
     {
-        'role_name':'Scholar',
+        'role_name':'scholar',
         'tool':'book_and_quill',
         'class':'operative',
         'rarity':'Uncommon',
@@ -940,6 +940,7 @@ class Crew:
             Drawing layer
         """
         self.role_name:str = role_attrs.get('role_name')
+        self.name = generate_name()
         self.tool:Tool = TOOL_MAP[role_attrs.get('tool')](self)
         self.class_type = role_attrs.get('class')
         self.rarity = role_attrs.get('rarity')
@@ -970,11 +971,16 @@ class Crew:
     def set_master(self, master) -> None:
        self.master = master
 
+    def select(self) -> None:
+        pass
+
+    def deselect(self) -> None:
+       pass
+
 
 def build_crew_member(owner, role_name) -> Crew:
    for role in crew_roles:
       if role_name == role.get('role_name'):
         crew_member = Crew(role)
         crew_member.set_master(owner)
-        print(crew_member)
         return crew_member

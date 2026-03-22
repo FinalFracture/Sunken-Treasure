@@ -15,6 +15,7 @@ class Non_Player_Character(Character):
     def __init__(self, ship_type, starting_pos=(0,0)):
         super().__init__(ship_type)
         self.sprite:Character_Sprite = Character_Sprite(self, starting_pos, ship_type)
+        self.type = 'generic'
         #initialization setup
         self._npc_setup()
         

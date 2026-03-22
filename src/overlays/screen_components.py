@@ -102,8 +102,8 @@ class Icon_bg(Sprite):
 
     def update(self, dt): 
         if self.subject:
-            self.subject.rect.center = self.rect.center
-            self.value_display.text=str(self.subject.value)
+            self.subject.sprite.rect.center = self.rect.center
+            self.value_display.text=str(self.subject.rarity)
             self.value_display.rect.center = (self.rect.x, self.rect.y)
         else:
             #remove the value display from the display group

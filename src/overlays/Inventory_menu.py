@@ -176,9 +176,9 @@ class InventoryMenu(pygame.sprite.Sprite):
         def _update_item_window(slot)->None:
             if slot is not None and slot.subject is not None:
                 self.item_stats_display.item_name_display.text =f"Name : {slot.subject.name}"
-                self.item_stats_display.item_value_display.text = f'Value : {str(slot.subject.stats["value"])}'
-                self.item_stats_display.item_description_line1.text = slot.subject.stats['description1']
-                self.item_stats_display.item_description_line2.text = slot.subject.stats['description2']
+                self.item_stats_display.item_value_display.text = f'Value : {str(slot.subject.rarity)}'
+                self.item_stats_display.item_description_line1.text = slot.subject.description[0]
+                self.item_stats_display.item_description_line2.text = slot.subject.description[1]
             else:
                 self.item_stats_display.item_name_display.text = ''
                 self.item_stats_display.item_value_display.text = ''
@@ -311,7 +311,7 @@ class CrewQuarters(pygame.sprite.Sprite):
             overlay_sprites.add(crew_slot)
             try:
                 crew_slot.subject = crew_list[index]
-                crew_slot.subject.rect.center = crew_slot.rect.center
+                crew_slot.subject.sprite.rect.center = crew_slot.rect.center
             except IndexError:
                 pass # 
         return self.crew_slots

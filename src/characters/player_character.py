@@ -14,6 +14,7 @@ class Player_Character(Character):
         super().__init__(ship_type)
         self.game = game
         self.sprite = Character_Sprite(self, starting_pos=(0,0), ship_type=ship_type)
+        self.type = 'generic'
         self.stats = BOAT_STATS[ship_type]
         self.inventory_ui = InventoryMenu(self, (5, 15), self.stats['inv_pages'], self.stats['crew_slots'])
         self.overlay = Overlay(self)

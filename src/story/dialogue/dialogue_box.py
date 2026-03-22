@@ -109,7 +109,7 @@ class DialogBox(Sprite):
         self.speaker_space_image.fill('black')
         self.speaker = self.dialogue[self.dialogue_index]['speaker']
         self.speaker_space.image = self.speaker.master.sprite.image
-        self.speaker_icon.image = self.speaker.image
+        self.speaker_icon.image = self.speaker.sprite.image
         self._text_scroll_direction = 0
         self.text_on_screen_index = 0
         self.shown_characters = []

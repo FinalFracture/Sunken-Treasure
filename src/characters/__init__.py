@@ -39,8 +39,7 @@ class Character():
         self.stats = BOAT_STATS[ship_type]
         self.gold:int = 50
         self.timers:dict = {}
-        self.crew_list:list[Crew] = [build_crew_member(self, 'Angler'),build_crew_member(self, 'Miner')] 
-        print(('Debugging:', self.crew_list))
+        self.crew_list:list[Crew] = [build_crew_member(self, 'angler'),build_crew_member(self, 'miner')] 
         self.active_crew:Crew = None
         self.state = 'normal'
         self.animations:dict = {'left': [], 'right': []}
