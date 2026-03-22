@@ -38,6 +38,7 @@ class DialogBox(Sprite):
                                     ,relative_rect=self.rect)
         self.display_items = [self, self.text_box, self.speaker_space, self.speaker_icon]
         overlay_sprites.remove(self.display_items)
+        self.test_value = 0
 
     def start_dialogue(self, player_crew:Crew, interactee_crew:Crew) -> None:
         #initialize textbox, subject image, and relative display items
@@ -50,8 +51,10 @@ class DialogBox(Sprite):
         self._change_dialogue()
         
     def update(self, dt):
-        self.text_box.rect.left = self.rect.left + 100
-        self.text_box.rect.centery = self.rect.centery
+        if self.test_value == 0:
+            self.text_box.rect.left = self.rect.left + 100
+            self.text_box.rect.centery = self.rect.centery
+            self.test_value += 1
 
     def run(self) -> str:
         

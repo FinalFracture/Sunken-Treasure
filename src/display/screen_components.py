@@ -280,7 +280,8 @@ class Textbox(Sprite):
         self.offset = offset
         self._text_setup()
         self.set_position()
-        overlay_sprites.remove(self)
+        self.kill()
+
 
     def _text_setup(self):
         self.font = pygame.font.Font('assets/fonts/standard.ttf', self.fontsize)
@@ -300,6 +301,7 @@ class Textbox(Sprite):
         self.image = pygame.transform.scale_by(self.image, (width_ratio, height_ratio))
 
     def set_position(self) -> None:
+        print(self)
         padding = 5
         if self.position == 'relative':
             self.rect.x = self.reference_rect.x + self.offset[0]
@@ -323,7 +325,6 @@ class Textbox(Sprite):
 
             self.rect.centerx += self.offset[0]
             self.rect.centery += self.offset[1]
-        print(f"{self.text}: \n{self.rect}")
 
     def update(self, dt):
         if self.master not in overlay_sprites:
