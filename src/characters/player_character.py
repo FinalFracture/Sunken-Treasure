@@ -5,7 +5,7 @@ from src.utils.settings import *
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
 from src.display import CharacterSprite, InventoryMenu, HUD
-from src.characters.character_loadouts import Character, BOAT_STATS
+from src.characters import Character, BOAT_STATS
 
 
 
@@ -65,7 +65,7 @@ class PlayerCharacter(Character):
                 self.active_crew = self.crew_list[key_num-1]
                 self.deselect_tools(self.active_crew)
                 self.sprite.toggle_tool(self.active_crew.tool.name)
-                self.active_crew.toggle_status()
+                self.active_crew.toggle_selected()
             except IndexError as ie:
                 pass
                 # play reject sound

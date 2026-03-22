@@ -5,9 +5,9 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites
-from src.characters.character_loadouts import Character
+from src.characters import Character
 from src.display.character_sprites import CharacterSprite
-from src.characters.crew import Crew
+from src.mechanics import Crew
 from src.display.dialogue_box import DIALOGUE
 
 class Non_Player_Character(Character):
@@ -22,6 +22,7 @@ class Non_Player_Character(Character):
         #stats/metric setup
         all_sprites.remove(self.crew_list)
         self.speed = 40
+        self.type = 'shop'
         self.wander_duration = 4000
         self.pause_duration = 2000
         self.wander_range = 150 #can move 75 pixels in any direction from spawn

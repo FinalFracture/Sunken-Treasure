@@ -1,6 +1,7 @@
 import pygame
 from math import floor
-from src.display import IconBG, ItemStatBox, UiButton
+from src.mechanics.tools import GameItem
+from src.display.screen_components import IconBG, ItemStatBox, UiButton
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
 from src.event_managing import EVENT_HANDLER
@@ -108,7 +109,7 @@ class InventoryMenu(pygame.sprite.Sprite):
             overlay_sprites.remove(self.active_inv_page.values())
             for slot in self.active_inv_page.values(): 
                 if slot.subject:
-                    overlay_sprites.remove(slot.subject)
+                    overlay_sprites.remove(slot.subject.sprite)
             try:
                 self.interactable_slots.remove(self.active_inv_page.values())
             except ValueError:
@@ -120,7 +121,7 @@ class InventoryMenu(pygame.sprite.Sprite):
             for slot in self.active_inv_page.values():
                 overlay_sprites.add(slot)
                 if slot.subject is not None:
-                    overlay_sprites.add(slot.subject)
+                    overlay_sprites.add(slot.subject.sprite)
                     if slot.subject.selected == True:
                         slot.click(toggle=1) 
                     else:
@@ -174,9 +175,9 @@ class InventoryMenu(pygame.sprite.Sprite):
         def _update_item_window(slot)->None:
             if slot is not None and slot.subject is not None:
                 self.item_stats_display.item_name_display.text =f"Name : {slot.subject.name}"
-                self.item_stats_display.item_value_display.text = f'Value : {str(slot.subject.stats["value"])}'
-                self.item_stats_display.item_description_line1.text = slot.subject.stats['description1']
-                self.item_stats_display.item_description_line2.text = slot.subject.stats['description2']
+                self.item_stats_display.item_value_display.text = f'Value : {str(slot.subject.rarity) if hasattr(slot.subject,"rarity") else str(slot.subject.value)}'
+                self.item_stats_display.item_description_line1.text = slot.subject.description[0]
+                self.item_stats_display.item_description_line2.text = slot.subject.description[1]
             else:
                 self.item_stats_display.item_name_display.text = ''
                 self.item_stats_display.item_value_display.text = ''
@@ -213,8 +214,8 @@ class InventoryMenu(pygame.sprite.Sprite):
         for slot in self.active_inv_page.values():
             slot.click(toggle=0)
         self.menu_refresh
-        for item in self.menu_ui:
-            overlay_sprites.remove(item)  #stop showing anything on the screen
+        for element in self.menu_ui:
+            overlay_sprites.remove(element)  #stop showing anything on the screen
         self.is_active = False
         self.stop_showing = False
         self.sidebar.exit()
@@ -239,7 +240,7 @@ class InventoryMenu(pygame.sprite.Sprite):
     def drop_item(self, arg) -> None:
         for slot in self.all_slots:
             if slot.subject is not None and slot.subject.selected:
-                overlay_sprites.remove(slot.subject)
+                overlay_sprites.remove(slot.subject.sprite)
                 slot.subject = None
             slot.click(toggle=0)
         self.reorder()
@@ -300,7 +301,7 @@ class CrewQuarters(pygame.sprite.Sprite):
     #remove all inventory items from display groups.
         for slot in self.crew_slots.values(): 
             if slot.subject:
-                overlay_sprites.remove(slot.subject)
+                overlay_sprites.remove(slot.subject.sprite)
                 slot.subject = None #clear what is stored in each slot.
 
     def show(self, crew_list:list) -> list[IconBG]:

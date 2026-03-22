@@ -38,12 +38,12 @@ class Overlay(Sprite):
         self.knots.set_text(str(self.master.knotical_speed))
     
 
-    def position_crew_icons(self, crew_list):
+    def position_crew_icons(self, crew_list:list):
         for member_number, member_role in enumerate(crew_list):
             self.crew_list[member_number] = member_role
-        for crew_index, crew_icon in self.crew_list.items():
-            overlay_sprites.add(crew_icon)
-            crew_icon.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
+        for crew_index, crew in self.crew_list.items():
+            overlay_sprites.add(crew.sprite)
+            crew.sprite.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
 
 class ItemStatBox(Sprite):
     #the sprite to display an items value, description, weight, and other values
@@ -104,7 +104,7 @@ class IconBG(Sprite):
     def update(self, dt): 
         if self.subject:
             self.subject.sprite.rect.center = self.rect.center
-            self.value_display.set_text(str(self.subject.value))
+            self.value_display.set_text=str(self.subject.rarity) if hasattr(self.subject,'rarity') else str(self.subject.value)
             self.value_display.rect.center = (self.rect.x, self.rect.y)
         else:
             #remove the value display from the display group
@@ -301,7 +301,6 @@ class Textbox(Sprite):
         self.image = pygame.transform.scale_by(self.image, (width_ratio, height_ratio))
 
     def set_position(self) -> None:
-        print(self)
         padding = 5
         if self.position == 'relative':
             self.rect.x = self.reference_rect.x + self.offset[0]
@@ -433,4 +432,4 @@ class CrewUiSlot(Sprite):
         overlay_sprites.add(crew_member.sprite)
         self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
         self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-        self.crew_title_textbox.set_text(crew_member.role)
+        self.crew_title_textbox.set_text(crew_member.role_name)

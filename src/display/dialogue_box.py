@@ -6,7 +6,7 @@ from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
 from src.event_managing import EVENT_HANDLER
 from src.display.screen_components import Textbox, Generic
-from src.characters.crew import Crew
+from src.mechanics.crew import Crew
 from src.story.dialogue.generic_dialogue import get_dialogue
 
 class DialogBox(Sprite):
@@ -112,7 +112,7 @@ class DialogBox(Sprite):
         self.speaker_space_image.fill('black')
         self.speaker = self.dialogue[self.dialogue_index]['speaker']
         self.speaker_space.image = self.speaker.master.sprite.image
-        self.speaker_icon.image = self.speaker.image
+        self.speaker_icon.image = self.speaker.sprite.image
         self._text_scroll_direction = 0
         self.text_on_screen_index = 0
         self.shown_characters = []

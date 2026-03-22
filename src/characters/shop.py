@@ -3,14 +3,15 @@ import random
 from src.utils.settings import *
 from src.display.trade_menu import TradeMenu
 from src.display.Inventory_menu import InventoryMenu
-from src.characters.crew import *
-from src.characters.character_loadouts.non_player_character import Non_Player_Character
+from src.mechanics import Crew, build_crew_member
+from src.characters.non_player_character import Non_Player_Character
 
 
 class BoatShop(Non_Player_Character):
     def __init__(self, ship_type, starting_pos) -> None:
         super().__init__(starting_pos = starting_pos, ship_type=ship_type)
         self.speed = 20
+        self.type = 'shop'
         self.inventory_ui = InventoryMenu(self, (600, 15), self.stats['inv_pages'], self.stats['crew_slots'])
         self.trade_ui = TradeMenu(self)
 
