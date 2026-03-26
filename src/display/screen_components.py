@@ -224,6 +224,7 @@ class Generic(Sprite):
     def __init__(self, display_group, surface_image, z=overlay_layers['menu_items'], offset=(0,0), topleft_pos:tuple[int, int]=(0,0), relative_rect:pygame.rect.Rect|None=None):
         super().__init__(display_group)
         self.timers = {}
+        self.frame_debug = 0
         self.image:Surface = surface_image
         self.relative_rect = relative_rect
         self.offset = offset
@@ -241,6 +242,12 @@ class Generic(Sprite):
                                                 left=self.relative_rect.left+self.offset[0])
         else:
             self.rect = self.image.get_rect(topleft=self.topleft_pos)
+
+    def mod_position(self, x_mod:int=0, y_mod:int=0) -> None:
+        print(f"Before: {self.rect}")
+        self.rect.x += x_mod
+        self.rect.y += y_mod
+        print(f"After: {self.rect}")
 
     def update(self, dt) -> None:
         super().update()

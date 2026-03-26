@@ -31,9 +31,11 @@ class Tool:
             current_find = Generic(all_sprites, caught_item.sprite.image, z = cameragroup_layers['items'], relative_rect=self.master.master.sprite.status_rect)
         
             def _move_up(dt):
-                current_find.rect.y -= 75 * EVENT_HANDLER.dt
-                
+                current_find.mod_position(y_mod=-1)
+            
+            animation_buffer = 0.05 # provides a slow animation speed for _move_up
             current_find.timers = {current_find:Timer(1250, running_func=_move_up, ending_func=current_find.kill)}
+            current_find.timers[current_find].set_animation_buffer(animation_buffer)
             current_find.timers[current_find].activate()
 
 
