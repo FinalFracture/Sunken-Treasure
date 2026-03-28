@@ -46,6 +46,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.inv_page_rows = 8
         self.inv_page_cols = 6
         self.full_slots = 0
+        self.crew_list = []
         self.all_slots:list[IconBG] = []
         self.image = pygame.image.load('assets/images/hud/menu_bg.png')
         self.rect = self.image.get_rect(topleft = top_left_pos)
@@ -79,13 +80,12 @@ class InventoryMenu(pygame.sprite.Sprite):
         _setup_inv_slots()
         self.active_inv_page:dict[int, IconBG] = self.inv_pages[self.inv_page_index]
         
-    def show_menu(self, crew_list:list|None = None) -> None:
+    def show_menu(self, crew_list:list = []) -> None:
         """ display to the screen and add to players inventory"""
         if self.is_active == False:
             self.is_active = True
             self.sidebar.show()
-            if crew_list is not None:
-                self.interactable_slots.extend(self.crew_menu.show(crew_list))
+            self.crew_list = crew_list
 
             self.menu_refresh()
             for item in self.menu_ui:
@@ -106,18 +106,14 @@ class InventoryMenu(pygame.sprite.Sprite):
         
         def _clear_inventory_squares() -> None:  
             #remove all inventory items from display groups.
-            overlay_sprites.remove(self.active_inv_page.values())
             for slot in self.active_inv_page.values(): 
                 if slot.subject:
                     overlay_sprites.remove(slot.subject.sprite)
-            try:
-                self.interactable_slots.remove(self.active_inv_page.values())
-            except ValueError:
-                pass
-
+            self.interactable_slots.clear()
+            overlay_sprites.remove(self.active_inv_page.values())
+            
         def _show_inv_page() -> None: 
             """assign each item an inventory slot"""
-
             for slot in self.active_inv_page.values():
                 overlay_sprites.add(slot)
                 if slot.subject is not None:
@@ -127,7 +123,7 @@ class InventoryMenu(pygame.sprite.Sprite):
                     else:
                         slot.click(toggle=0) 
                 else:
-                    slot.click(toggle=0)   
+                    slot.click(toggle=0) 
 
         def _get_inv_page():
             if self.inv_page_index > max(self.inv_pages.keys()):
@@ -139,10 +135,21 @@ class InventoryMenu(pygame.sprite.Sprite):
         _clear_inventory_squares()
         _get_inv_page()
         self.interactable_slots.extend(self.active_inv_page.values())
+        if len(self.crew_list) > 0:
+                self.interactable_slots.extend(self.crew_menu.show(self.crew_list))
         self.full_slots = len([slot for slot in self.all_slots if slot.subject is not None])
+        print(len(self.interactable_slots))
         if self.stop_showing == False:
             _show_inv_page()
             self.sidebar.update_buttons()
+
+
+
+
+
+
+
+
 
     def input(self, keys, mouse_pos, dt) -> None:
         #set flags to use for preventing code from running repeatedly with key presses
@@ -187,7 +194,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         if any(keys[key] for key in EVENT_HANDLER.single_press_keys):
             if self.key_pressed == False:
                 _key_inputs() 
-            self.key_pressed = True
+                self.key_pressed = True
         else:
             self.key_pressed = False
 
@@ -234,7 +241,7 @@ class InventoryMenu(pygame.sprite.Sprite):
             try:
                 slot.subject = all_items[index]
             except IndexError:
-                pass # skip ones with no subject
+                continue # skip ones with no subject
         self.menu_refresh()
 
     def drop_item(self, arg) -> None:
