@@ -68,7 +68,7 @@ class UiButton(Sprite):
         self.z = z
         self.function = button_func
         self.arg = func_arg
-        self.textboxes = [Textbox(self, text=button_text, max_rect=refrence_rect)]
+        self.textboxes = [Textbox(self, text=button_text, max_rect=self.rect)]
 
     def update(self, dt) -> None:
         self._update_textboxes()
@@ -224,7 +224,6 @@ class Generic(Sprite):
     def __init__(self, display_group, surface_image, z=overlay_layers['menu_items'], offset=(0,0), topleft_pos:tuple[int, int]=(0,0), relative_rect:pygame.rect.Rect|None=None):
         super().__init__(display_group)
         self.timers = {}
-        self.frame_debug = 0
         self.image:Surface = surface_image
         self.relative_rect = relative_rect
         self.offset = offset
@@ -244,10 +243,12 @@ class Generic(Sprite):
             self.rect = self.image.get_rect(topleft=self.topleft_pos)
 
     def mod_position(self, x_mod:int=0, y_mod:int=0) -> None:
-        print(f"Before: {self.rect}")
         self.rect.x += x_mod
         self.rect.y += y_mod
-        print(f"After: {self.rect}")
+
+    def set_image(self, image:Surface) -> None:
+        self.image = image
+        self.set_position()
 
     def update(self, dt) -> None:
         super().update()
@@ -289,23 +290,35 @@ class Textbox(Sprite):
         self.set_position()
         self.kill()
 
-
     def _text_setup(self):
         self.font = pygame.font.Font('assets/fonts/standard.ttf', self.fontsize)
         self.image = self.font.render(self.text, False, (0,0,0,0))
         self.rect = self.image.get_rect()
-        self._resize()
         
     def set_text(self, text:str) -> None:
         self.text = text
-        self.image = self.font.render(self.text.title(), True, self.color)
+        self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect()
-        self._resize()
+        self.set_position()
 
-    def _resize(self) -> None:
-        width_ratio = self.max_rect.width / (self.rect.width + 1)
-        height_ratio = self.max_rect.height / (self.rect.height + 1)
+    def resize_text(self) -> None:
+        if len(self.text) == 0:
+            return
+        
+        if self.rect.width >= self.max_rect.width:
+            while self.rect.width > self.max_rect.width:
+                self.fontsize -= 1
+                self._text_setup()
+        else:
+            while self.rect.width < self.max_rect.width:
+                self.fontsize += 1
+                self._text_setup()
+
+        #padding = 7
+        #width_ratio = self.max_rect.width / (self.rect.width + padding)
+        #height_ratio = self.max_rect.height / (self.rect.height + padding)
         #self.image = pygame.transform.scale_by(self.image, (width_ratio, height_ratio))
+        #self.rect = self.image.get_rect()
 
     def set_position(self) -> None:
         padding = 5
