@@ -61,7 +61,7 @@ class Non_Player_Character(Character):
         self.sprite._check_collisions()
         if self.direction.magnitude() > 0:
             self.direction = self.direction.normalize()
-            self.pos += self.direction * player_speed * dt 
+            self.pos += self.direction * self.speed * dt 
             self.sprite.rect.center = (0,0) # self.pos
         
     def _get_tool_use(self) -> None:

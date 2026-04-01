@@ -6,6 +6,7 @@ from src.utils.settings import *
 from src.utils.support import import_folder
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
 from src.mechanics.tools import Tool, TOOL_MAP
+from src.display.screen_components import CARD_MAP, HUDCard
 
 image_paths:str = 'assets/images/crew/tool_'
 
@@ -392,14 +393,16 @@ crew_roles:list[dict] = [
         'tool':'fishing_pole',
         'class':'fisher',
         'rarity':'Common',
+        'hud_card': '',
         'description1': 'Use an array of rods',
         'description2': 'to catch many fish.'
     },
     {
         'role_name':'harpooner',
-        'tool':'harpoon_gun',
+        'tool':'harpoon',
         'class':'fisher',
         'rarity':'Uncommon',
+        'hud_card': '',
         'description1': 'Sharpshooting fishers.',
         'description2': 'Slow, but big catches.'
     },
@@ -408,6 +411,7 @@ crew_roles:list[dict] = [
         'tool':'fishing_net',
         'class':'fisher',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Netters can haul vast',
         'description2': 'quantities of sea life.'
     },
@@ -416,6 +420,7 @@ crew_roles:list[dict] = [
         'tool':'pickaxe',
         'class':'rockhound',
         'rarity':'Common',
+        'hud_card': '',
         'description1': 'Miners pick away at',
         'description2': 'rocks to find ores.'
     },
@@ -424,6 +429,7 @@ crew_roles:list[dict] = [
         'tool':'tnt',
         'class':'rockhound',
         'rarity':'Uncommon',
+        'hud_card': '',
         'description1': 'Can blast apart stones',
         'description2': 'for numerous minerals.'
     },
@@ -432,6 +438,7 @@ crew_roles:list[dict] = [
         'tool':'stone_cutter',
         'class':'rockhound',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Delicately carve out',
         'description2': 'precious gemstones.'
     },
@@ -440,6 +447,7 @@ crew_roles:list[dict] = [
         'tool':'clipboard',
         'class':'deckhand',
         'rarity':'Common',
+        'hud_card': 'cargo',
         'description1': 'Increase ship storage',
         'description2': 'capacity and effeciency.'
     },
@@ -448,6 +456,7 @@ crew_roles:list[dict] = [
         'tool':'oar',
         'class':'deckhand',
         'rarity':'Uncommon',
+        'hud_card': 'knots',
         'description1': 'Experienced sailor who',
         'description2': 'makes travel faster.'
     },
@@ -456,6 +465,8 @@ crew_roles:list[dict] = [
         'tool':'mallet_and_saw',
         'class':'deckhand',
         'rarity':'Rare',
+        'hud_card': '?',
+        'hud_card': '',
         'description1': 'Upgrade and repair ',
         'description2': 'your vehicles.'
     },
@@ -464,6 +475,7 @@ crew_roles:list[dict] = [
         'tool':'cutlery',
         'class':'merchant',
         'rarity':'Common',
+        'hud_card': '',
         'description1': 'Keep the morale high',
         'description2': 'and crewmates happy.'
     },
@@ -472,6 +484,7 @@ crew_roles:list[dict] = [
         'tool':'scale',
         'class':'merchant',
         'rarity':'Uncommon',
+        'hud_card': 'gold',
         'description1': 'Barter your way into',
         'description2': 'bargains and deals.'
     },
@@ -480,6 +493,7 @@ crew_roles:list[dict] = [
         'tool':'needle_and_thread',
         'class':'merchant',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Make better sails or',
         'description2': 'dress crew to the nines.'
     },
@@ -488,6 +502,7 @@ crew_roles:list[dict] = [
         'tool':'sea_claw',
         'class':'artificer',
         'rarity':'Common',
+        'hud_card': '',
         'description1': 'Reach into the depths',
         'description2': 'and bring up treasure.'
     },
@@ -496,6 +511,7 @@ crew_roles:list[dict] = [
         'tool':'seer_stone',
         'class':'artificer',
         'rarity':'Uncommon',
+        'hud_card': '',
         'description1': 'Pick through salvage',
         'description2': 'and identify treasure.'
     },
@@ -504,6 +520,7 @@ crew_roles:list[dict] = [
         'tool':'compass',
         'class':'artificer',
         'rarity':'Rare',
+        'hud_card': 'bearing',
         'description1': 'Effortlessley navigate',
         'description2': 'environmental phenomenon.'
     },
@@ -512,6 +529,7 @@ crew_roles:list[dict] = [
         'tool':'tap',
         'class':'islander',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Produce barrels of',
         'description2': 'valuable liquids.'
     },
@@ -520,6 +538,7 @@ crew_roles:list[dict] = [
         'tool':'shovel_and_pail',
         'class':'islander',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Grow myriad of crops',
         'description2': 'for a variety of uses.'
     },
@@ -528,6 +547,7 @@ crew_roles:list[dict] = [
         'tool':'spear',
         'class':'islander',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Hunt, slaughter, and',
         'description2': 'herd all the animals.'
     },
@@ -536,6 +556,7 @@ crew_roles:list[dict] = [
         'tool':'lockpick',
         'class':'operative',
         'rarity':'Rare',
+        'hud_card': '',
         'description1': 'Steal shop items',
         'description2': 'and decieve crew.'
     },
@@ -544,6 +565,7 @@ crew_roles:list[dict] = [
         'tool':'map',
         'class':'operative',
         'rarity':'Common',
+        'hud_card': '',
         'description1': 'Create and read maps.',
         'description2': "You'll never get lost."
     },
@@ -552,6 +574,7 @@ crew_roles:list[dict] = [
         'tool':'book_and_quill',
         'class':'operative',
         'rarity':'Uncommon',
+        'hud_card': '',
         'description1': 'Highly knowledgable,',
         'description2': 'improve other crew.'
     }
@@ -949,6 +972,8 @@ class Crew:
         self.tool:Tool = TOOL_MAP[role_attrs.get('tool')](self)
         self.class_type = role_attrs.get('class')
         self.rarity = role_attrs.get('rarity')
+        self.hud_card_type:str = role_attrs.get('hud_card')
+        self._setup_hud_card()
         self.description = [role_attrs.get('description1'), role_attrs.get('description2')]
         self.archetype = random.choice(list(archetype_vocabularies.keys()))
         self.sprite = CrewSprite(role_attrs.get('tool'), self)
@@ -956,6 +981,18 @@ class Crew:
         self.master = None
         self.selected:bool = False
         self._init_skills()
+
+    def _setup_hud_card(self) -> None:
+        if self.hud_card_type in list(CARD_MAP.keys()):
+            self.hud_card:HUDCard = CARD_MAP[self.hud_card_type]()
+    
+    def activate_hud_card(self) -> None:
+       if self.hud_card:
+           self.hud_card.activate()
+    
+    def deactivate_hud_card(self) -> None:
+       if self.hud_card:
+           self.hud_card.deactivate()
 
     def _init_skills(self) -> None:
         self.tool_use_rate:int = 0
@@ -992,7 +1029,6 @@ class Crew:
             self.deselect()
         else:
             self._select()
-
 
 def build_crew_member(owner, role_name) -> Crew:
    for role in crew_roles:

@@ -358,7 +358,7 @@ class CrewQuartersHUD(Sprite):
         super().__init__(overlay_sprites)
         image_path:str = 'assets/images/hud/crew_quarters/crew_quarters_hud.png'
         self.image:Surface = pygame.image.load(image_path)
-        self.rect = self.image.get_rect(left=0, bottom=640)
+        self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
         self.z = overlay_layers['hud']
         self.max_crew:int = 18
         self.current_crew_slots:list[CrewUiSlot] = []
@@ -370,8 +370,8 @@ class CrewQuartersHUD(Sprite):
         x_spacing= 8
         y_padding = 4
         y_spacing = 4
-        slot_rows = 2
-        slot_columns = 9
+        slot_rows = 1
+        slot_columns = 18
         slot_width = 36
         slot_height = 52
         slot_index = 0
@@ -417,16 +417,6 @@ class CrewUiSlot(Sprite):
         self.z = overlay_layers['hud_elements']
         self.crew_icon_top_pixel = 0
         self.crew_icon_left_pixel = 0
-        self.crew_title_top_pixel = 0
-        self.crew_title_left_pixel = 0
-        self.crew_title_textbox:Textbox = Textbox(self, 
-        max_rect=Rect(0,0,32,16),
-        fontsize=9, 
-        offset=(self.crew_title_left_pixel, self.crew_title_top_pixel), 
-                                                  position='relative')
-        self.place_holder_textbox_text = "EMPTY"
-        self.crew_title_textbox.set_text(self.place_holder_textbox_text)
-        overlay_sprites.add(self.crew_title_textbox)
         self.place_holder_crew_sprite:Surface = Surface((32,32))
         self.place_holder_crew_sprite.fill('lightgray')
         self.crew_image_sprite:Generic = Generic(overlay_sprites,
@@ -442,8 +432,6 @@ class CrewUiSlot(Sprite):
             self.crew_title_left_pixel = 2 + self.rect.left
             self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
             self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-            self.crew_title_textbox.rect.top = self.crew_title_top_pixel
-            self.crew_title_textbox.rect.left = self.crew_title_left_pixel
         return super().update(*args, **kwargs)
     
     def fill_slot(self, crew_member) -> None:
@@ -452,4 +440,44 @@ class CrewUiSlot(Sprite):
         overlay_sprites.add(crew_member.sprite)
         self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
         self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-        self.crew_title_textbox.set_text(crew_member.role_name)
+
+class HUDCard(Sprite):
+    def __init__(self, card_type:str) -> None:
+        super().__init__(overlay_sprites)
+        image_path_prefix = 'assets/images/hud/hud_card_'
+        self.active = False
+        self.image_path = image_path_prefix + card_type + '.png'
+        self.image = pygame.image.load(self.image_path).convert_alpha()
+        self.rect = self.image.get_rect(bottom=SCREEN_HEIGHT)
+        self.z = overlay_layers['hud_elements']
+        textbox_topleft_pixel = (3,6)
+        self.textbox = Textbox(self, self.rect, offset=textbox_topleft_pixel, fontsize=6, position='relative')
+
+    def activate(self) -> None:
+        self.active = True
+        overlay_sprites.add(self, self.textbox)
+
+    def dacticvate(self) -> None:
+        self.active = False
+        self.kill()
+
+class BearingCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'bearing'
+        super().__init__(self.card_type)
+        
+        starting_location = (0,0)
+        self.location = starting_location
+    
+    def update(self, dt) -> None:
+        pass
+    
+    def update_location_text(self, coords) -> None:
+        text = f'{coords[0]} / {coords[1]}'
+        self.textbox.set_text(text)
+
+CARD_MAP = {
+    'cargo': None,
+    'gold': None,
+    'bearing': BearingCard
+}

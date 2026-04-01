@@ -108,7 +108,7 @@ class CharacterSprite(Sprite):
         self.pos = Vector2(self.rect.center) 
         self.direction = Vector2()
     
-    def movement_input(self, keys:list, mouse_pos:tuple[int, int], dt:float):
+    def movement_input(self, keys:list, mouse_pos:tuple[int, int], dt:float, move_speed:int):
         #movement normalizing
         if keys[pygame.K_a]: # move left
             self.direction.x = -1
@@ -134,7 +134,7 @@ class CharacterSprite(Sprite):
         if self.direction.magnitude() > 0:
             self.moving = True
             self.direction = self.direction.normalize()
-            self.pos += self.direction * player_speed * dt 
+            self.pos += self.direction * move_speed * dt 
             self.rect.center = self.pos
 
         else:

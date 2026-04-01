@@ -39,7 +39,7 @@ class Character():
         self.stats = BOAT_STATS[ship_type]
         self.gold:int = 50
         self.timers:dict = {}
-        self.crew_list:list[Crew] = [build_crew_member(self, 'angler'),build_crew_member(self, 'miner')] 
+        self.crew_list:list[Crew] = [build_crew_member(self, 'angler'),build_crew_member(self, 'explorer')] 
         self.active_crew:Crew = None
         self.state = 'normal'
         self.animations:dict = {'left': [], 'right': []}
@@ -64,3 +64,19 @@ class Character():
 
     def update(self, dt):
         pass
+
+    def get_crew(self, crew_member:Crew) -> None:
+        self.crew_list.append(crew_member)
+
+    def give_crew(self, new_owner, crew_name:str) -> Crew:
+        """
+        Transfer ownership of a crew member to another character.
+
+        Args:
+            new_owner (Character): Character to take ownership of the crew.
+            crew_name (str): Full name of the crew being requested.
+        """
+        for crew in self.crew_list:
+            if crew.name == crew_name:
+                new_owner.get_crew(crew)
+                self.crew_list.remove(crew)
