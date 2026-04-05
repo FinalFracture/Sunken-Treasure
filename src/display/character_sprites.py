@@ -5,14 +5,13 @@ from pygame.rect import Rect
 from pygame.sprite import Sprite, spritecollide
 from pygame.surface import Surface
 
-from src.overlays.screen_components import Generic
 from src.utils.support import import_folder
 from src.utils.settings import *
 from src.utils.cameras import collidable_sprites, all_sprites, cameragroup_layers, overlay_sprites
 
-character_image_paths = 'assets\images\characters\\'
+character_image_paths = 'assets/images/characters//'
 
-class Character_Sprite(Sprite):
+class CharacterSprite(Sprite):
     """
     A sprite class that all overworld character sprites will use. 
     
@@ -109,7 +108,7 @@ class Character_Sprite(Sprite):
         self.pos = Vector2(self.rect.center) 
         self.direction = Vector2()
     
-    def movement_input(self, keys:list, mouse_pos:tuple[int, int], dt:float):
+    def movement_input(self, keys:list, mouse_pos:tuple[int, int], dt:float, move_speed:int):
         #movement normalizing
         if keys[pygame.K_a]: # move left
             self.direction.x = -1
@@ -135,7 +134,7 @@ class Character_Sprite(Sprite):
         if self.direction.magnitude() > 0:
             self.moving = True
             self.direction = self.direction.normalize()
-            self.pos += self.direction * player_speed * dt 
+            self.pos += self.direction * move_speed * dt * SPEED_MULTIPLIER
             self.rect.center = self.pos
 
         else:
@@ -190,7 +189,6 @@ class Character_Sprite(Sprite):
         self.status_rect.center = (self.rect.centerx, self.rect.top)
         self.frame_index +=4 *dt
         self.animation_string = self.pointing_dir + self.selected_tool
-        # print(self.animation_string)
 
         if self.frame_index >= len(self.animations[self.animation_string]):
             self.frame_index = 0

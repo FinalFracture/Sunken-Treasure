@@ -4,9 +4,9 @@ from pygame.sprite import Sprite
 from src.utils.settings import *
 from src.event_managing import EVENT_HANDLER
 
-pygame.display.set_mode((screen_width, screen_height)) #calling from settings, set the height and width of the display window
+pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) #calling from settings, set the height and width of the display window
 pygame.display.set_caption('Treasures of the Surf')
-pygame.display.set_icon(pygame.image.load('assets/images/items/fish/carp/carp.png'))
+pygame.display.set_icon(pygame.image.load('assets/images/items/carp.png'))
 DISPLAY_SURFACE = pygame.display.get_surface()
 
 # drawing layers
@@ -40,8 +40,8 @@ class Camera_Group(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
     def custom_draw(self, player, surface):
-        self.offset.x = player.rect.centerx - screen_width / 2
-        self.offset.y = player.rect.centery - screen_height / 2
+        self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
+        self.offset.y = player.rect.centery - SCREEN_HEIGHT / 2
         for layer in cameragroup_layers.values():
             for sprite in self.sprites():
                 if sprite.z == layer:

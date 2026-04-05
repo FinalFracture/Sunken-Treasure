@@ -1,7 +1,7 @@
 import pygame
 pygame.init() #initialize pygame
 
-from src.utils.settings import screen_width, screen_height
+from src.utils.settings import SCREEN_WIDTH, SCREEN_HEIGHT
 from src.new_game import main_loop
 
 class Game:

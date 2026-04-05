@@ -11,7 +11,6 @@ def import_folder(image_path, debug=False):
             surface = pygame.image.load(full_path).convert_alpha()
             surface_list.append(surface)
                 
-
     return surface_list
     
 def group_toggle(boolean_tuple:tuple[bool]) -> tuple[bool]:

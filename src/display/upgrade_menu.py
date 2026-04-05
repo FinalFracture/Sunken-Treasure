@@ -2,8 +2,8 @@ import pygame
 from pygame.sprite import Sprite
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers
-from src.overlays.screen_components import Textbox
-from src.overlays.screen_components import UpgradeIconBg
+from src.display.screen_components import Textbox
+from src.display.screen_components import UpgradeIconBg
 
 class UpgradeMenu(Sprite):
     def __init__(self) -> None:
@@ -17,7 +17,7 @@ class UpgradeMenu(Sprite):
     def _menu_setup(self) -> None:
         """set the position for each element of the menu and assign its logic"""
         #menu setup
-        self.image = pygame.image.load('assets\images\hud/upgrade_menu_bg.png')
+        self.image = pygame.image.load('assets/images/hud/upgrade_menu_bg.png')
         self.rect = self.image.get_rect(center = (400, 250))
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))

@@ -6,16 +6,15 @@ from src.utils.settings import *
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites
 from src.characters import Character
-from src.overlays.character_sprites import Character_Sprite
+from src.display.character_sprites import CharacterSprite
 from src.mechanics import Crew
-from src.story.dialogue.dialogue_box import DIALOGUE
+from src.display.dialogue_box import DIALOGUE
 
 class Non_Player_Character(Character):
     """The non player character class will encompass all self moving objects that are not the player."""
     def __init__(self, ship_type, starting_pos=(0,0)):
         super().__init__(ship_type)
-        self.sprite:Character_Sprite = Character_Sprite(self, starting_pos, ship_type)
-        self.type = 'generic'
+        self.sprite:CharacterSprite = CharacterSprite(self, starting_pos, ship_type)
         #initialization setup
         self._npc_setup()
         
@@ -23,6 +22,7 @@ class Non_Player_Character(Character):
         #stats/metric setup
         all_sprites.remove(self.crew_list)
         self.speed = 40
+        self.type = 'shop'
         self.wander_duration = 4000
         self.pause_duration = 2000
         self.wander_range = 150 #can move 75 pixels in any direction from spawn
@@ -61,7 +61,7 @@ class Non_Player_Character(Character):
         self.sprite._check_collisions()
         if self.direction.magnitude() > 0:
             self.direction = self.direction.normalize()
-            self.pos += self.direction * player_speed * dt 
+            self.pos += self.direction * self.speed * dt * SPEED_MULTIPLIER
             self.sprite.rect.center = (0,0) # self.pos
         
     def _get_tool_use(self) -> None:

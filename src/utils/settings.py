@@ -1,12 +1,12 @@
 from pygame.math import Vector2
 
 #screen settings
-screen_width = 1280
-screen_height = 640
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 640
 screen_color = (30,30,220)
 
-#player settings
-player_speed = 100
+#Move Speed Multiplier
+SPEED_MULTIPLIER = 50
 
 #dialogue settings
 TEXT_SPEED = 25

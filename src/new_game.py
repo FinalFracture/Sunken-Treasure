@@ -2,7 +2,7 @@ import pygame
 from src.utils.settings import *
 from src.utils.cameras import screen_update
 from src.utils.timer import Timer
-from src.characters.player_character import Player_Character
+from src.characters.player_character import PlayerCharacter
 from src.characters.non_player_character import Non_Player_Character
 from src.characters.shop import BoatShop
 #from maps import Map
@@ -19,7 +19,7 @@ class main_loop:
     def setup(self) -> None:
         """Initialize major game assets"""
         #Initialize the player and assets
-        self.player = Player_Character(self, 'galleon')
+        self.player = PlayerCharacter(self, 'galleon')
         self.test_npc = Non_Player_Character('raft', (15, 32))
 
         #self.active_map = Map(self.all_sprites, self.collision_group, 'maps/Map1.tmx')
@@ -33,5 +33,4 @@ class main_loop:
         Timer.update_all()
 
         #draw to the screen and update positions
-        
         
