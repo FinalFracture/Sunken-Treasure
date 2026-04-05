@@ -4,7 +4,7 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
-from src.display import CharacterSprite, InventoryMenu, HUD
+from src.display import CharacterSprite, InventoryMenu, OVERLAY
 from src.characters import Character, BOAT_STATS
 from src.display.screen_components import HUDCard
 
@@ -19,14 +19,14 @@ class PlayerCharacter(Character):
         self.inventory_ui = InventoryMenu(self, (5, 15), self.stats['inv_pages'], self.stats['crew_slots'])
         self.timers = {}
         self.gps_coord:tuple[float, float] = (0,0)
-        self.speed = 360
+        self.speed = self.stats.get("speed")
         self.knotical_speed = 0
         self.gold = 0
         self.is_clicking = False
         self.is_key_pressed = False
         self.hud_cards:dict[str, HUDCard] = {}
         self._start_hud_cards()
-        HUD.crew_quarters_hud.populate(self.crew_list)
+        OVERLAY.crew_quarters_hud.populate(self.crew_list)
 
     def _interact(self):
         #check for interactions with the worlds objects
@@ -51,7 +51,7 @@ class PlayerCharacter(Character):
         self.gps_coord = (int(self.sprite.rect.x / 7), int((self.sprite.rect.y / 7)*-1))
         bearing_card = self.hud_cards.get('bearing')
         if bearing_card:
-            bearing_card.update_location_text(self.gps_coord)
+            bearing_card.update_textbox(self.gps_coord)
         if self.sprite.moving:
             self.knotical_speed = round((((self.speed-100)/100)*7.9)+11.8) 
         else:
@@ -71,6 +71,7 @@ class PlayerCharacter(Character):
                 hud_card = crew.hud_card
                 hud_card.activate()                
                 self.hud_cards[hud_card_type] = hud_card
+        OVERLAY.change_hud_cards(self.hud_cards)
 
     def update(self,dt):
         if self.state == 'normal':
@@ -111,6 +112,9 @@ class PlayerCharacter(Character):
             elif keys[pygame.K_SPACE]: #interact with objects
                 self._interact()
 
+            elif keys[pygame.K_LCTRL]: #Overlay hints
+                OVERLAY.flash_hud_cards()
+
             elif keys[pygame.K_e]:
                 self.show_inventory()
 
@@ -148,9 +152,14 @@ class PlayerCharacter(Character):
         """
         return str(self.inventory_ui.full_slots)
     
+    def update_money(self, coins:int) -> None:
+        self.gold += coins
+        self.hud_cards['coin'].update
+
     def get_crew(self, crew_member) -> None:
         super().get_crew(crew_member)
         if hasattr(crew_member, "hud_card"):
             hud_card = self.hud_cards[crew_member.hud_card_type]
             self.hud_cards[hud_card] = crew_member.hud_card
             hud_card.activate()
+            OVERLAY.change_hud_cards(self.hud_cards)

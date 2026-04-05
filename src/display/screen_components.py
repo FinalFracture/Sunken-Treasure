@@ -448,36 +448,103 @@ class HUDCard(Sprite):
         self.active = False
         self.image_path = image_path_prefix + card_type + '.png'
         self.image = pygame.image.load(self.image_path).convert_alpha()
-        self.rect = self.image.get_rect(bottom=SCREEN_HEIGHT)
+        self.rect = self.image.get_rect(left=0)
         self.z = overlay_layers['hud_elements']
-        textbox_topleft_pixel = (3,6)
-        self.textbox = Textbox(self, self.rect, offset=textbox_topleft_pixel, fontsize=6, position='relative')
+        textbox_topleft_pixel = (3,3)
+        self.textbox = Textbox(self, self.rect, offset=textbox_topleft_pixel, fontsize=8, position='relative')
+        self.kill()
+
+    def set_position(self, top:int, left:int) -> None:
+        self.rect.top = top
+        self.rect.left = left
+        self.textbox.set_position()
 
     def activate(self) -> None:
         self.active = True
         overlay_sprites.add(self, self.textbox)
 
-    def dacticvate(self) -> None:
+    def deactivate(self) -> None:
         self.active = False
+        self.textbox.kill()
         self.kill()
+
+    def update_textbox(self, *args) -> None:
+        pass
+
+class CoinCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'coin'
+        super().__init__(self.card_type)
+        self.coin_textbox = self.textbox
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, coins:int) -> None:
+        self.coin_textbox.set_text(coins)
+
+class CargoCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'cargo'
+        super().__init__(self.card_type)
+        self.cargo_textbox = self.textbox
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, cargo_count:int) -> None:
+        self.cargo_textbox.set_text(cargo_count)
+
+class SpeedCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'speed'
+        super().__init__(self.card_type)
+        self.speed_textbox = self.textbox
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, speed:int) -> None:
+        self.speed_textbox.set_text(speed)
 
 class BearingCard(HUDCard):
     def __init__(self) -> None:
         self.card_type = 'bearing'
         super().__init__(self.card_type)
+        self.meridian_textbox = self.textbox
+        clime_textbox_topleft_pixel = (3,18)
+        self.clime_textbox = Textbox(self, self.rect, offset=clime_textbox_topleft_pixel, fontsize=8, position='relative')
         
-        starting_location = (0,0)
-        self.location = starting_location
+
+    def activate(self):        
+        overlay_sprites.add(self.clime_textbox)
+        return super().activate()
     
+    def deactivate(self):
+        self.clime_textbox.kill()
+        return super().deactivate()
+
     def update(self, dt) -> None:
         pass
     
-    def update_location_text(self, coords) -> None:
-        text = f'{coords[0]} / {coords[1]}'
-        self.textbox.set_text(text)
+    def update_textbox(self, coords) -> None:
+        meridian = f'X: {coords[0]}'
+        clime = f'Y: {coords[1]}'
+        self.meridian_textbox.set_text(meridian)
+        self.clime_textbox.set_text(clime)
+
+    def set_position(self, top, left):
+        super().set_position(top, left)
+        self.clime_textbox.set_position()
 
 CARD_MAP = {
-    'cargo': None,
-    'gold': None,
-    'bearing': BearingCard
+    'coin': CoinCard,
+    'cargo': CargoCard,
+    'speed': SpeedCard,
+    'bearing': BearingCard,
+    'time': None,
+    'wind': None,
+    'weather': None,
+
 }
+

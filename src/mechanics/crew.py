@@ -456,7 +456,7 @@ crew_roles:list[dict] = [
         'tool':'oar',
         'class':'deckhand',
         'rarity':'Uncommon',
-        'hud_card': 'knots',
+        'hud_card': 'speed',
         'description1': 'Experienced sailor who',
         'description2': 'makes travel faster.'
     },
@@ -465,7 +465,6 @@ crew_roles:list[dict] = [
         'tool':'mallet_and_saw',
         'class':'deckhand',
         'rarity':'Rare',
-        'hud_card': '?',
         'hud_card': '',
         'description1': 'Upgrade and repair ',
         'description2': 'your vehicles.'
@@ -474,7 +473,7 @@ crew_roles:list[dict] = [
         'role_name':'cook',
         'tool':'cutlery',
         'class':'merchant',
-        'rarity':'Common',
+        'rarity':'Uncommon',
         'hud_card': '',
         'description1': 'Keep the morale high',
         'description2': 'and crewmates happy.'
@@ -483,8 +482,8 @@ crew_roles:list[dict] = [
         'role_name':'trader',
         'tool':'scale',
         'class':'merchant',
-        'rarity':'Uncommon',
-        'hud_card': 'gold',
+        'rarity':'Common',
+        'hud_card': 'coin',
         'description1': 'Barter your way into',
         'description2': 'bargains and deals.'
     },
@@ -522,7 +521,8 @@ crew_roles:list[dict] = [
         'rarity':'Rare',
         'hud_card': 'bearing',
         'description1': 'Effortlessley navigate',
-        'description2': 'environmental phenomenon.'
+        'description2': 'environmental phenomenon.',
+        'note':"skills are precision and accuracy of read. + mods the precision ie 1 -> 1.000, mulltiply provides correction to read froma random number generator"
     },
     {
         'role_name':'distiller',

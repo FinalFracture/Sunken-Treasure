@@ -134,7 +134,7 @@ class CharacterSprite(Sprite):
         if self.direction.magnitude() > 0:
             self.moving = True
             self.direction = self.direction.normalize()
-            self.pos += self.direction * move_speed * dt 
+            self.pos += self.direction * move_speed * dt * SPEED_MULTIPLIER
             self.rect.center = self.pos
 
         else:
