@@ -7,18 +7,18 @@ from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layer
 from src.event_managing import EVENT_HANDLER
 
 class InventoryMenu(pygame.sprite.Sprite):
-    def __init__(self, owner:pygame.sprite.Sprite, top_left_pos:tuple, inv_pages:int, crew_slots:int) -> None:
+    def __init__(self, owner:pygame.sprite.Sprite, inv_pages:int, crew_slots:int) -> None:
         super().__init__(overlay_sprites)
         self.is_active:bool = False
         self.z:int = overlay_layers['menu']
         self.master:pygame.sprite.Sprite = owner
         self.key_pressed:bool = False
         self.interactable_slots:list[IconBG] = []
-        self._menu_setup(top_left_pos, inv_pages, crew_slots)
+        self._menu_setup(inv_pages, crew_slots)
         self.stop_showing = False
         overlay_sprites.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
 
-    def _menu_setup(self, top_left_pos:tuple[int,int], inv_pages:int, crew_slots:int) -> None:
+    def _menu_setup(self, inv_pages:int, crew_slots:int) -> None:
         """set the position for each element of the menu and assign its logic"""
         
         def _setup_inv_slots() -> None:
@@ -49,7 +49,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.crew_list = []
         self.all_slots:list[IconBG] = []
         self.image = pygame.image.load('assets/images/hud/menu_bg.png')
-        self.rect = self.image.get_rect(topleft = top_left_pos)
+        self.rect = self.image.get_rect()
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))
         self.item_stats_display = ItemStatBox(self.rect, (25,10))

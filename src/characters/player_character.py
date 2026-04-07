@@ -16,7 +16,7 @@ class PlayerCharacter(Character):
         self.game = game
         self.sprite = CharacterSprite(self, starting_pos=(0,0), ship_type=ship_type)
         self.stats = BOAT_STATS[ship_type]
-        self.inventory_ui = InventoryMenu(self, (5, 15), self.stats['inv_pages'], self.stats['crew_slots'])
+        self.inventory_ui = InventoryMenu(self, self.stats['inv_pages'], self.stats['crew_slots'])
         self.timers = {}
         self.gps_coord:tuple[float, float] = (0,0)
         self.speed = self.stats.get("speed")
