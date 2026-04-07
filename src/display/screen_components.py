@@ -68,7 +68,7 @@ class UiButton(Sprite):
         self.z = z
         self.function = button_func
         self.arg = func_arg
-        self.textboxes = [Textbox(self, text=button_text, max_rect=refrence_rect)]
+        self.textboxes = [Textbox(self, text=button_text, max_rect=self.rect)]
 
     def update(self, dt) -> None:
         self._update_textboxes()
@@ -242,6 +242,14 @@ class Generic(Sprite):
         else:
             self.rect = self.image.get_rect(topleft=self.topleft_pos)
 
+    def mod_position(self, x_mod:int=0, y_mod:int=0) -> None:
+        self.rect.x += x_mod
+        self.rect.y += y_mod
+
+    def set_image(self, image:Surface) -> None:
+        self.image = image
+        self.set_position()
+
     def update(self, dt) -> None:
         super().update()
         
@@ -282,23 +290,35 @@ class Textbox(Sprite):
         self.set_position()
         self.kill()
 
-
     def _text_setup(self):
         self.font = pygame.font.Font('assets/fonts/standard.ttf', self.fontsize)
         self.image = self.font.render(self.text, False, (0,0,0,0))
         self.rect = self.image.get_rect()
-        self._resize()
         
     def set_text(self, text:str) -> None:
         self.text = text
-        self.image = self.font.render(self.text.title(), True, self.color)
+        self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect()
-        self._resize()
+        self.set_position()
 
-    def _resize(self) -> None:
-        width_ratio = self.max_rect.width / (self.rect.width + 1)
-        height_ratio = self.max_rect.height / (self.rect.height + 1)
+    def resize_text(self) -> None:
+        if len(self.text) == 0:
+            return
+        
+        if self.rect.width >= self.max_rect.width:
+            while self.rect.width > self.max_rect.width:
+                self.fontsize -= 1
+                self._text_setup()
+        else:
+            while self.rect.width < self.max_rect.width:
+                self.fontsize += 1
+                self._text_setup()
+
+        #padding = 7
+        #width_ratio = self.max_rect.width / (self.rect.width + padding)
+        #height_ratio = self.max_rect.height / (self.rect.height + padding)
         #self.image = pygame.transform.scale_by(self.image, (width_ratio, height_ratio))
+        #self.rect = self.image.get_rect()
 
     def set_position(self) -> None:
         padding = 5
@@ -338,7 +358,7 @@ class CrewQuartersHUD(Sprite):
         super().__init__(overlay_sprites)
         image_path:str = 'assets/images/hud/crew_quarters/crew_quarters_hud.png'
         self.image:Surface = pygame.image.load(image_path)
-        self.rect = self.image.get_rect(left=0, bottom=640)
+        self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
         self.z = overlay_layers['hud']
         self.max_crew:int = 18
         self.current_crew_slots:list[CrewUiSlot] = []
@@ -350,8 +370,8 @@ class CrewQuartersHUD(Sprite):
         x_spacing= 8
         y_padding = 4
         y_spacing = 4
-        slot_rows = 2
-        slot_columns = 9
+        slot_rows = 1
+        slot_columns = 18
         slot_width = 36
         slot_height = 52
         slot_index = 0
@@ -397,16 +417,6 @@ class CrewUiSlot(Sprite):
         self.z = overlay_layers['hud_elements']
         self.crew_icon_top_pixel = 0
         self.crew_icon_left_pixel = 0
-        self.crew_title_top_pixel = 0
-        self.crew_title_left_pixel = 0
-        self.crew_title_textbox:Textbox = Textbox(self, 
-        max_rect=Rect(0,0,32,16),
-        fontsize=9, 
-        offset=(self.crew_title_left_pixel, self.crew_title_top_pixel), 
-                                                  position='relative')
-        self.place_holder_textbox_text = "EMPTY"
-        self.crew_title_textbox.set_text(self.place_holder_textbox_text)
-        overlay_sprites.add(self.crew_title_textbox)
         self.place_holder_crew_sprite:Surface = Surface((32,32))
         self.place_holder_crew_sprite.fill('lightgray')
         self.crew_image_sprite:Generic = Generic(overlay_sprites,
@@ -422,8 +432,6 @@ class CrewUiSlot(Sprite):
             self.crew_title_left_pixel = 2 + self.rect.left
             self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
             self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-            self.crew_title_textbox.rect.top = self.crew_title_top_pixel
-            self.crew_title_textbox.rect.left = self.crew_title_left_pixel
         return super().update(*args, **kwargs)
     
     def fill_slot(self, crew_member) -> None:
@@ -432,4 +440,111 @@ class CrewUiSlot(Sprite):
         overlay_sprites.add(crew_member.sprite)
         self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
         self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-        self.crew_title_textbox.set_text(crew_member.role_name)
+
+class HUDCard(Sprite):
+    def __init__(self, card_type:str) -> None:
+        super().__init__(overlay_sprites)
+        image_path_prefix = 'assets/images/hud/hud_card_'
+        self.active = False
+        self.image_path = image_path_prefix + card_type + '.png'
+        self.image = pygame.image.load(self.image_path).convert_alpha()
+        self.rect = self.image.get_rect(left=0)
+        self.z = overlay_layers['hud_elements']
+        textbox_topleft_pixel = (3,3)
+        self.textbox = Textbox(self, self.rect, offset=textbox_topleft_pixel, fontsize=8, position='relative')
+        self.kill()
+
+    def set_position(self, top:int, left:int) -> None:
+        self.rect.top = top
+        self.rect.left = left
+        self.textbox.set_position()
+
+    def activate(self) -> None:
+        self.active = True
+        overlay_sprites.add(self, self.textbox)
+
+    def deactivate(self) -> None:
+        self.active = False
+        self.textbox.kill()
+        self.kill()
+
+    def update_textbox(self, *args) -> None:
+        pass
+
+class CoinCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'coin'
+        super().__init__(self.card_type)
+        self.coin_textbox = self.textbox
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, coins:int) -> None:
+        self.coin_textbox.set_text(coins)
+
+class CargoCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'cargo'
+        super().__init__(self.card_type)
+        self.cargo_textbox = self.textbox
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, cargo_count:int) -> None:
+        self.cargo_textbox.set_text(cargo_count)
+
+class SpeedCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'speed'
+        super().__init__(self.card_type)
+        self.speed_textbox = self.textbox
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, speed:int) -> None:
+        self.speed_textbox.set_text(speed)
+
+class BearingCard(HUDCard):
+    def __init__(self) -> None:
+        self.card_type = 'bearing'
+        super().__init__(self.card_type)
+        self.meridian_textbox = self.textbox
+        clime_textbox_topleft_pixel = (3,18)
+        self.clime_textbox = Textbox(self, self.rect, offset=clime_textbox_topleft_pixel, fontsize=8, position='relative')
+        
+
+    def activate(self):        
+        overlay_sprites.add(self.clime_textbox)
+        return super().activate()
+    
+    def deactivate(self):
+        self.clime_textbox.kill()
+        return super().deactivate()
+
+    def update(self, dt) -> None:
+        pass
+    
+    def update_textbox(self, coords) -> None:
+        meridian = f'X: {coords[0]}'
+        clime = f'Y: {coords[1]}'
+        self.meridian_textbox.set_text(meridian)
+        self.clime_textbox.set_text(clime)
+
+    def set_position(self, top, left):
+        super().set_position(top, left)
+        self.clime_textbox.set_position()
+
+CARD_MAP = {
+    'coin': CoinCard,
+    'cargo': CargoCard,
+    'speed': SpeedCard,
+    'bearing': BearingCard,
+    'time': None,
+    'wind': None,
+    'weather': None,
+
+}
+

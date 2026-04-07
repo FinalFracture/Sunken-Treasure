@@ -30,7 +30,13 @@ class Timer:
         self.start_time = 0
         self.active = False
         self.paused = False 
+        self.animation_buffer = 0 # buffer to prevent running func to run every frame if deisred
+        self.animation_ticks = 0 # counter that resets after buffer is exceeded
         self.clock = pygame.time.Clock() #for creating a framerate independant animation setup. 
+
+    def set_animation_buffer(self, buffer:int) -> None:
+        """Set to 0 to run every frame"""
+        self.animation_buffer = buffer
 
     def pause(self):
         self.paused = True
@@ -56,10 +62,14 @@ class Timer:
         self.start_time = 0
 
     def update(self):
-        if not self.paused:
-            current_time = pygame.time.get_ticks()
-            if self.active:
-                if self.running_func:
-                        self.running_func(EVENT_HANDLER.dt)
-                if current_time - self.start_time > self.duration:
-                    self.deactivate()
+        if self.paused:
+            return
+        
+        current_time = pygame.time.get_ticks()
+        if self.active:
+            self.animation_ticks += EVENT_HANDLER.dt
+            if self.running_func and self.animation_ticks > self.animation_buffer:
+                self.running_func(EVENT_HANDLER.dt)
+                self.animation_ticks = 0
+            if current_time - self.start_time > self.duration:
+                self.deactivate()

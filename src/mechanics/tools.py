@@ -31,9 +31,11 @@ class Tool:
             current_find = Generic(all_sprites, caught_item.sprite.image, z = cameragroup_layers['items'], relative_rect=self.master.master.sprite.status_rect)
         
             def _move_up(dt):
-                current_find.rect.y -= 75 * EVENT_HANDLER.dt
-                
+                current_find.mod_position(y_mod=-1)
+            
+            animation_buffer = 0.05 # provides a slow animation speed for _move_up
             current_find.timers = {current_find:Timer(1250, running_func=_move_up, ending_func=current_find.kill)}
+            current_find.timers[current_find].set_animation_buffer(animation_buffer)
             current_find.timers[current_find].activate()
 
 
@@ -94,7 +96,7 @@ class FishingPole(Tool):
 
 
 class Harpoon(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -102,7 +104,7 @@ class Harpoon(Tool):
 
 
 class FishingNet(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -140,7 +142,7 @@ class Pickaxe(Tool):
 
 
 class TNT(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -148,7 +150,7 @@ class TNT(Tool):
 
 
 class StoneCutter(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -156,15 +158,93 @@ class StoneCutter(Tool):
 
 
 class Clipboard(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
         pass
+    """
+    def __init__(self, offset:tuple[int], owner:pygame.sprite.Sprite, z=overlay_layers['menu'], buttons=None) -> None:
+        super().__init__(overlay_sprites)
+        image_path = 'assets/images/hud/clipboard.png'
+        self.image = pygame.image.load(image_path)
+        self.rect = self.image.get_rect(topleft=offset)
+        self.z = z
+        self.master = owner
+        self.display_objects = []
+        self.buttons:list[UiButton] = []
+        self.make_buttons()
+
+    def make_buttons(self) -> None:
+        buttons = {
+            'Sort-ABC':{
+                'function':self.reorder,
+                'args':'alphabetical'
+            },
+            'Drop':{
+                'function':self.drop_item,
+                'args':None
+            },
+            'Sort-$$$':{
+                'function':self.reorder,
+                'args':'value'
+            }
+        }
+
+        for name, button in buttons.items():
+            func=button['function']
+            args=button['args']
+            button=UiButton(button_text=name, button_func=func, func_arg=args, refrence_rect=self.rect, topleft_offset=(0,0))
+            self.display_objects.append(button)
+            self.buttons.append(button)
+            overlay_sprites.remove(button)
+
+    def update_buttons(self) -> None:
+        def _set_position(index:int) -> tuple[int]:
+            side_padding = 25
+            top_padding = 25
+            height = 35
+            width = 60
+            max_cols = 2
+            if index % max_cols == 0:
+                left = side_padding
+            elif index % max_cols == 1:
+                left = width + side_padding * max_cols
+
+            row = floor(index/max_cols)
+            top = self.rect.top + top_padding + ((top_padding + height) * row)
+
+            return(left,top)
+
+        for index, button in enumerate(self.buttons):
+            offset = _set_position(index)
+            button.position(reference_rect=self.rect, offset=offset)
+            overlay_sprites.add(button)
+            for textbox in button.textboxes:
+                textbox.set_position()
+
+    def show(self) -> None:
+        for item in self.display_objects:
+            overlay_sprites.add(item)
+
+    def update(self, dt) -> None:
+        self._input()
+
+    def _input(self) -> None:
+        mouse_pos = pygame.mouse.get_pos()
+        if pygame.mouse.get_pressed()[0]:
+            for button in self.buttons:
+                if button.rect.collidepoint(mouse_pos):
+                    button.click()
+
+    def exit(self) -> None:
+        for item in self.display_objects:
+            overlay_sprites.remove(item)
+    """
 
 
 class Oar(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -172,7 +252,7 @@ class Oar(Tool):
 
 
 class MalletAndSaw(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -180,7 +260,7 @@ class MalletAndSaw(Tool):
 
 
 class Cutlery(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -188,7 +268,7 @@ class Cutlery(Tool):
 
 
 class Scale(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -196,7 +276,7 @@ class Scale(Tool):
 
 
 class NeedleAndThread(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -204,7 +284,7 @@ class NeedleAndThread(Tool):
 
 
 class SeaClaw(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -212,7 +292,7 @@ class SeaClaw(Tool):
 
 
 class SeerStone(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -220,7 +300,7 @@ class SeerStone(Tool):
 
 
 class Compass(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -228,7 +308,7 @@ class Compass(Tool):
 
 
 class Tap(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -236,7 +316,7 @@ class Tap(Tool):
 
 
 class ShovelAndPail(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -244,7 +324,7 @@ class ShovelAndPail(Tool):
 
 
 class Spear(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -252,7 +332,7 @@ class Spear(Tool):
 
 
 class Lockpick(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -260,7 +340,7 @@ class Lockpick(Tool):
 
 
 class Map(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
@@ -268,7 +348,7 @@ class Map(Tool):
 
 
 class BookAndQuill(Tool):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
         pass
 
     def update(self, *args, **kwargs) -> None:
