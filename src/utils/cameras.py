@@ -22,6 +22,7 @@ cameragroup_layers = {
 }
 
 overlay_layers = {
+    'hud_background' : 1,
     'hud': 10,
     'hud_elements': 20,
     'menu': 30,

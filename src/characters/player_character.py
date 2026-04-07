@@ -116,7 +116,7 @@ class PlayerCharacter(Character):
                 OVERLAY.flash_hud_cards()
 
             elif keys[pygame.K_e]:
-                self.show_inventory()
+                OVERLAY.overworld_pause(self.show_inventory)
 
             if key_num > 0:
                 _activate_crew(key_num)
@@ -134,7 +134,7 @@ class PlayerCharacter(Character):
         self.overlay.position_crew_icons(self.crew_list)
         return super().resume_play()
 
-    def show_inventory(self):
+    def show_inventory(self) -> bool:
         self.state = 'inventory'
         Timer.pause_all()
         self.deselect_tools()
@@ -142,6 +142,7 @@ class PlayerCharacter(Character):
             self.state = self.inventory_ui.show_menu(self.crew_list)
             screen_update(focus=self)
         Timer.resume_all()
+        return True
             
     def add_to_inventory(self, item):
         return self.inventory_ui.add_to_inventory(item)
