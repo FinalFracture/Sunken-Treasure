@@ -28,15 +28,25 @@ _player_inventory:dict[str, tuple[int,int]] = {
     'inventory': (55,3),
     'crew_quarters': (0,0), #fill out on desktop
     'clipboard': (0,3), #adjust on desktop
+    'exit': (0,0)
 } 
 
-_inventories:dict[str, tuple[int,int]] = {
+_trade:dict[str, tuple[int,int]] = {
     'player_inventory': (55, 3),
     'interactee_inventory': (SCREEN_WIDTH-55,3),
-    'player_rune_inventory': (SCREEN_WIDTH-55,3),
-    'player_upgrade_item_select': (0,0),
-    'player_upgrade_stat_select': (0,0),
-    'player_upgrade_rune_table': (0,0)
+    'confirm': (0,0),
+    'reset': (0,0),
+    'exit': (0,0)
+}
+
+_upgrades:dict[str, tuple[int,int]] = {
+    'player_inventory': (55, 3),
+    'upgrade_item_select': (0,0),
+    'upgrade_stat_select': (0,0),
+    'upgrade_rune_table': (0,0),
+    'confirm': (0,0),
+    'reset': (0,0),
+    'exit': (0,0)
 }
 
 _compendium:dict[str, tuple[int,int]] = {
