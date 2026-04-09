@@ -4,7 +4,7 @@ from src.event_managing import EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
-from src.display import CharacterSprite, InventoryMenu, OVERLAY
+from src.display import CharacterSprite, InventoryMenu, ViewID, OVERLAY
 from src.characters import Character, BOAT_STATS
 from src.display.screen_components import HUDCard
 
@@ -115,7 +115,7 @@ class PlayerCharacter(Character):
                 OVERLAY.flash_hud_cards()
 
             elif keys[pygame.K_e]:
-                OVERLAY.open_inventory(self.show_inventory)
+                OVERLAY.change_view(ViewID.INVENTORY, player=self)
 
             if key_num > 0:
                 _activate_crew(key_num)

@@ -13,11 +13,10 @@ from src.characters.player_character import PlayerCharacter
 class ViewID(Enum):
     OVERWORLD = auto()
     INVENTORY = auto()
-
+    TRADE = auto()
+    UPGRADE = auto()
 
 CREW_QUARTERS = CrewQuartersHUD()
-
-
 
 _trade:dict[str, tuple[int,int]] = {
     'player_inventory': (55, 3),
@@ -42,26 +41,26 @@ _compendium:dict[str, tuple[int,int]] = {
 }
 
 class View:
-    def __init__(self, manager, view_id) -> None:
-        self.manager = manager
-        self.view_id = view_id
+    def __init__(self) -> None:
         bg_surface = Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         view_bg = Generic(overlay_sprites, bg_surface, z=overlay_layers['hud_background'])
         self.child_objects = [view_bg]
 
-    def activate(self) -> None:
+    def activate(self, player) -> None:
         overlay_sprites.add(self.child_objects)
+        self._assign_player(player)
 
     def deactivate(self) -> None:
         overlay_sprites.remove(self.child_objects)
 
-    def assign_player(self, player:PlayerCharacter) -> None:
+    def _assign_player(self, player:PlayerCharacter) -> None:
         player_crew = player.crew_list
         CREW_QUARTERS.populate(player_crew)
 
 class OverworldView(View):
-    def __init__(self, manager):
-        super().__init__(manager, ViewID.OVERWORLD)
+    def __init__(self):
+        super().__init__()
+        self.view_id = ViewID.OVERWORLD
         self.child_object_positions:dict[str, tuple[int,int]] = {
             #(x_left,y_top)
             'hud_card_coin':(0,3),
@@ -103,8 +102,9 @@ class OverworldView(View):
         self.timers['flash_cards'].activate()
 
 class InventoryView(View):
-    def __init__(self, manager) -> None:
-        super().__init__(manager, ViewID.INVENTORY)
+    def __init__(self) -> None:
+        super().__init__()
+        self.view_id = ViewID.INVENTORY
         self.child_object_positions:dict[str, tuple[int,int]] = {
             'inventory': (55,3),
             'crew_quarters': (0,0), #fill out on desktop
@@ -113,8 +113,8 @@ class InventoryView(View):
         }
         self.child_objects.append(CREW_QUARTERS)
     
-    def assign_player(self, player:PlayerCharacter) -> None:
-        super().assign_player(player)
+    def _assign_player(self, player:PlayerCharacter) -> None:
+        super()._assign_player(player)
         player_inv = player.inventory_ui
         if player_inv not in self.child_objects:
             self.child_objects.append(player_inv)
@@ -122,31 +122,18 @@ class InventoryView(View):
         inv_cord_left = self.child_object_positions['inventory'][0]
         player_inv.set_position(top=inv_cord_top, left=inv_cord_left)
 
-    def open_inventory(self, *callables) -> None:
-        """
-        Pause the game world to interact with a new overlay showing items, stats, etc. 
-
-        Parameters
-        ----------
-        - callables: add callables in the order you want them called
-
-        """
-        unpaused = False
-        while not unpaused:
-            for callable in callables:
-                try:
-                    unpaused = callable()
-                except:
-                    continue
         
 class ViewsManager:
     def __init__(self) -> None:
+        self.active_view:View = None
         self.views:dict[int, View] = {
             0: OverworldView(),
             1: InventoryView()
         }
-        self.active_view:View = self.views[0]
-        self.active_view.activate()
+        self.change_view(ViewID.OVERWORLD)
 
-    def change_view(view_number:int) -> None:
-        pass
+    def change_view(self, view_number:int, player) -> None:
+        if self.active_view:
+            self.active_view.deactivate()
+            self.active_view = self.views[view_number]
+            self.active_view.activate(player)
