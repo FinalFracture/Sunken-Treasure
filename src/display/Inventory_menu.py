@@ -120,10 +120,12 @@ class InventoryMenu(pygame.sprite.Sprite):
         if len(self.crew_list) > 0:
                 self.interactable_slots.extend(self.crew_menu.show(self.crew_list))
         self.full_slots = len([slot for slot in self.all_slots if slot.subject is not None])
-        print(len(self.interactable_slots))
         if self.stop_showing == False:
             _show_inv_page()
 
+    def set_position(self, top:int, left:int) -> None:
+        self.rect.top = top
+        self.rect.left = left
 
 
 

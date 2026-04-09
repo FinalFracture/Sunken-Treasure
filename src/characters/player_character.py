@@ -65,7 +65,6 @@ class PlayerCharacter(Character):
 
     def _start_hud_cards(self) -> None:
         for crew in self.crew_list:
-            print(crew.name)
             if hasattr(crew, "hud_card"):
                 hud_card_type = crew.hud_card_type
                 hud_card = crew.hud_card
@@ -116,7 +115,7 @@ class PlayerCharacter(Character):
                 OVERLAY.flash_hud_cards()
 
             elif keys[pygame.K_e]:
-                OVERLAY.overworld_pause(self.show_inventory)
+                OVERLAY.open_inventory(self.show_inventory)
 
             if key_num > 0:
                 _activate_crew(key_num)
