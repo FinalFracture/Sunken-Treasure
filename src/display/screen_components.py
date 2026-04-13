@@ -2,8 +2,12 @@ import pygame
 from pygame.surface import Surface
 from pygame.sprite import Sprite
 from pygame.rect import Rect
+from src.utils.enumerations import CardID
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
+from src.utils.enumerations import ViewID
+from src.story.generic_dialogue import get_dialogue
+from src.event_managing import EVENT_HANDLER
 
 class Overlay(Sprite):
     def __init__(self, owner):
@@ -349,7 +353,7 @@ class Textbox(Sprite):
         if self.master not in overlay_sprites:
             self.kill()
 
-class CrewQuartersHUD(Sprite):
+class CrewDisplay(Sprite):
     """A class to create and manage the UI for displaying crew on the HUD and in game menus
     
     """
@@ -358,12 +362,11 @@ class CrewQuartersHUD(Sprite):
         super().__init__(overlay_sprites)
         image_path:str = 'assets/images/hud/crew_quarters/crew_quarters_hud.png'
         self.image:Surface = pygame.image.load(image_path)
-        self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
+        self.rect = self.image.get_rect()
         self.z = overlay_layers['hud']
         self.max_crew:int = 18
         self.current_crew_slots:list[CrewUiSlot] = []
         self.crew_slot_positions:dict[int, tuple[int,int]] = {}
-        self._set_crew_slot_positions()
     
     def _set_crew_slot_positions(self) -> None:
         x_padding = 4
@@ -408,6 +411,33 @@ class CrewQuartersHUD(Sprite):
                 print("Crew Quarters is full")
         self._position_crew_slots()
 
+    def set_position(self, 
+                     top:int=None, 
+                     left:int=None, 
+                     bottom:int=None, 
+                     right:int=None, 
+                     centerx:int=None, 
+                     centery:int=None) -> None:
+        if top:
+            self.rect.top = top
+        if left:
+            self.rect.left = left
+        if bottom:
+            self.rect.bottom = bottom
+        if right:
+            self.rect.right = right
+        if centerx:
+            self.rect.centerx = centerx
+        if centery:
+            self.rect.centery = centery
+            print(centery)
+        if hasattr(self, "textbox"):
+            self.textbox.set_position()
+
+    def activate(self) -> None:
+        self._set_crew_slot_positions()
+        self._position_crew_slots()
+
 class CrewUiSlot(Sprite):
     def __init__(self) -> None:
         super().__init__(overlay_sprites)
@@ -445,7 +475,6 @@ class HUDCard(Sprite):
     def __init__(self, card_type:str) -> None:
         super().__init__(overlay_sprites)
         image_path_prefix = 'assets/images/hud/hud_card_'
-        self.active = False
         self.image_path = image_path_prefix + card_type + '.png'
         self.image = pygame.image.load(self.image_path).convert_alpha()
         self.rect = self.image.get_rect(left=0)
@@ -454,17 +483,31 @@ class HUDCard(Sprite):
         self.textbox = Textbox(self, self.rect, offset=textbox_topleft_pixel, fontsize=8, position='relative')
         self.kill()
 
-    def set_position(self, top:int, left:int) -> None:
-        self.rect.top = top
-        self.rect.left = left
+    def set_position(self, 
+                     top:int=None, 
+                     left:int=None, 
+                     bottom:int=None, 
+                     right:int=None, 
+                     centerx:int=None, 
+                     centery:int=None) -> None:
+        if top:
+            self.rect.top = top
+        if left:
+            self.rect.left = left
+        if bottom:
+            self.rect.bottom = bottom
+        if right:
+            self.rect.right = right
+        if centerx:
+            self.rect.centerx = centerx
+        if centery:
+            self.rect.centery = centery
         self.textbox.set_position()
 
     def activate(self) -> None:
-        self.active = True
         overlay_sprites.add(self, self.textbox)
 
     def deactivate(self) -> None:
-        self.active = False
         self.textbox.kill()
         self.kill()
 
@@ -538,13 +581,209 @@ class BearingCard(HUDCard):
         self.clime_textbox.set_position()
 
 CARD_MAP = {
-    'coin': CoinCard,
-    'cargo': CargoCard,
-    'speed': SpeedCard,
-    'bearing': BearingCard,
-    'time': None,
-    'wind': None,
-    'weather': None,
-
+    CardID.COIN: CoinCard,
+    CardID.CARGO: CargoCard,
+    CardID.SPEED: SpeedCard,
+    CardID.BEARING: BearingCard,
+    CardID.TIME: None,
+    CardID.WIND: None,
+    CardID.WEATHER: None,
+    CardID.NULL: None
 }
 
+class DialogBox(Sprite):
+    
+    relations:dict[list[str, str], dict[str, str | int]] = {} 
+    #eg. {'gerald lopez and harmony wheeler', {'crew':['gerald lopez', 'harmony wheeler'],'interatctions':4} }
+
+    def __init__(self):
+        super().__init__(overlay_sprites)
+        self.fontsize  = 16
+        self.screen_offset=(27,400)
+        self.z = overlay_layers['menu']
+        self.dialogue:list[str]
+        self.text:str
+        self.image = pygame.image.load('assets/images/hud/dialog_box.png')
+        self.rect = self.image.get_rect(topleft=self.screen_offset)
+        max_rect = self.rect.scale_by(0.75, 0.3)
+        self.textbox = Textbox(self, max_rect=max_rect, fontsize=self.fontsize, offset=(100,0), position='middleleft', text="Dialoge Box")
+        self.speaker_space_image = Surface((70,70))
+        self.speaker_space=Generic(overlay_sprites
+                                 ,self.speaker_space_image
+                                 ,z=overlay_layers['menu_elements']
+                                 ,offset=(15,15)
+                                 ,relative_rect=self.rect)
+        self.speaker_icon = Generic(overlay_sprites
+                                    ,Surface((16,16))
+                                    ,z=overlay_layers['text']
+                                    ,offset=(95,10)
+                                    ,relative_rect=self.rect)
+        self.display_items = [self, self.textbox, self.speaker_space, self.speaker_icon]
+        overlay_sprites.remove(self.display_items)
+        self.test_value = 0
+
+    def start_dialogue(self, player_crew, interactee_crew) -> None:
+        #initialize textbox, subject image, and relative display items
+        self.dialogue:list[dict] = get_dialogue(self._update_relations(player_crew, interactee_crew))
+        self.dialogue_index:int = 0
+        self.dialogue_identifier = ''
+        self.dialogue_end = False
+        self.ready_to_continue:bool = False
+        overlay_sprites.add(self.display_items)
+        self._change_dialogue()
+        
+    def update(self, dt):
+        if self.test_value == 0:
+            self.textbox.rect.left = self.rect.left + 100
+            self.textbox.rect.centery = self.rect.centery
+            self.test_value += 1
+
+    def run(self) -> str:
+        
+        if self.dialogue_end == True:
+            return self._end_dialogue()
+        else:
+            self._animate_text()      
+
+    def dialogue_input(self, keys, mouse_pos, dt) -> None:
+        def _single_press_operations():
+            if keys[pygame.K_w]:
+                self.dialogue_index -= 1
+                self._change_dialogue()
+
+            elif keys[pygame.K_s]:
+                self.dialogue_index += 1
+                self._change_dialogue()
+                
+            if keys[pygame.K_ESCAPE] or (keys[pygame.K_RETURN]):
+                self.dialogue_end = True
+            
+        self._text_scroll_direction = 0
+        if keys[pygame.K_d]:
+            self._text_scroll_direction = 1
+            self.textbox.set_text(self.shown_characters[int(self.text_on_screen_index)])
+
+        elif keys[pygame.K_a]:
+            self._text_scroll_direction = -1
+            self.textbox.set_text(self.shown_characters[int(self.text_on_screen_index)])
+
+        if EVENT_HANDLER.is_key_pressed == False:
+                _single_press_operations()
+                
+    def _check_dialogue_state(self):
+        # change dialogue resets dialogue state and prevents exit, but calling the match exits early.
+        if self.dialogue_index > len(self.dialogue)-1 and self.text_on_screen_index >= len(self.shown_characters) -1:
+            match self.dialogue_identifier: 
+                case '%':
+                    pass
+                case '*':
+                    pass
+                case '&':
+                    pass
+                case '':
+                    self.dialogue_end = True        
+
+    def _change_dialogue(self) -> None:
+        #dialoging setup
+        if self.dialogue_index > len(self.dialogue) -1:
+            self._check_dialogue_state()
+            self.dialogue_index = len(self.dialogue) -1
+        elif self.dialogue_index <= 0:
+            self.dialogue_index = 0
+        if self.dialogue_end == True:
+            return
+        
+        self.speaker_space_image.fill('black')
+        self.speaker = self.dialogue[self.dialogue_index]['speaker']
+        self.speaker_space.set_image(self.speaker.master.sprite.image)
+        self.speaker_icon.set_image(self.speaker.sprite.image)
+        self._text_scroll_direction = 0
+        self.text_on_screen_index = 0
+        self.shown_characters = []
+        self.text = f"{self.dialogue[self.dialogue_index]['speaker'].name.title()}: {self.dialogue[self.dialogue_index]['text']}"
+        if len(self.text) < 40:
+            self.shown_characters.append(self.text)
+        else:
+            for character in range(len(self.text)-39):
+                self.shown_characters.append(self.text[character:character+40])
+        self.textbox.set_text(self.shown_characters[int(self.text_on_screen_index)])
+
+    def _end_dialogue(self) -> str:
+        overlay_sprites.remove(self.display_items)
+        return 'normal'
+
+    def _animate_text(self):
+        self.text_on_screen_index += self._text_scroll_direction * EVENT_HANDLER.dt * TEXT_SPEED
+
+        if self.text_on_screen_index > len(self.shown_characters) -1:
+            self.text_on_screen_index = len(self.shown_characters) -1  #cap index at max length of string
+
+        if self.text_on_screen_index < 0: #cap min value of index at 0
+            self.text_on_screen_index = 0
+
+    def _update_relations(self, player_crew, interactee) -> dict:
+        """
+        Add a relation between 2 world crew members and start counting interactions. Update interaction count if
+        relation exists already. Set the next dialogue they would have. 
+        """
+        relationship_key = str(sorted([player_crew.name, interactee.name])) #alphabetize them to ensure consistency in the future
+        if relationship_key not in DialogBox.relations.keys():
+            DialogBox.relations[relationship_key] = {'interactions':0, 'crew':[player_crew, interactee]} # add the relation 
+        
+        DialogBox.relations[relationship_key]['interactions'] +=1
+
+        relation:dict = DialogBox.relations[relationship_key]
+        interactions = relation['interactions']
+        if interactions < 3:
+            relation['relation_status'] = 'new'
+        elif interactions < 7:
+            relation['relation_status'] = 'acquaintance'
+        elif interactions < 15:
+            relation['relation_status'] = 'familiar'
+        elif interactions < 25:
+            relation['relation_status'] = 'trusted'
+        elif interactions >= 40:
+            relation['relation_status'] = 'revered'
+        
+        return relation
+
+    def set_position(self, 
+                     top:int=None, 
+                     left:int=None, 
+                     bottom:int=None, 
+                     right:int=None, 
+                     centerx:int=None, 
+                     centery:int=None) -> None:
+        if top:
+            self.rect.top = top
+        if left:
+            self.rect.left = left
+        if bottom:
+            self.rect.bottom = bottom
+        if right:
+            self.rect.right = right
+        if centerx:
+            self.rect.centerx = centerx
+        if centery:
+            self.rect.centery = centery
+        if hasattr(self, "textbox"):
+            self.textbox.set_position()
+
+class InventoryDisplay(Sprite):
+    """
+    A class that holds UI elements to display a characters inventory. 
+    """
+    def __init__(self, owner) -> None:
+        super().__init__(overlay_sprites)
+        self.image = pygame.image.load('assets/images/hud/menu_bg.png')
+        self.rect = self.image.get_rect()
+        self.z = overlay_layers['hud']
+        self.all_spaces = []
+        self.inv_pages:dict[int, list] = {}
+        
+class ClipboardDisplay(Sprite):
+    def __init__(self) -> None:
+        super().__init__(overlay_sprites)
+        self.image = pygame.image.load('assets/images/hud/clipboard.png')
+        self.rect = self.image.get_rect()
+        self.z = overlay_layers['hud']

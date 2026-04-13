@@ -84,3 +84,4 @@ class Character():
             if crew.name == crew_name:
                 new_owner.get_crew(crew)
                 self.crew_list.remove(crew)
+

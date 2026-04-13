@@ -1,5 +1,5 @@
 import random
-from src.mechanics.crew import Crew, role_vocabularies, archetype_vocabularies
+from src.story.vocabularies import role_vocabularies, archetype_vocabularies
 
 ## ---------- Insertion characters ---------------##
 # @ = insert a crew name
@@ -287,13 +287,13 @@ general_dialog_trees = {
     }
 }
 
-def get_dialogue(relation:dict) -> list[dict[str, Crew |str]]:
+def get_dialogue(relation:dict) -> list[dict]:
     player = relation['crew'][0]
     interactee = relation['crew'][1]
-    convo_starter:Crew = random.choice([player, interactee])
+    convo_starter = random.choice([player, interactee])
     dialogue_tree = general_dialog_trees[interactee.master.type]
     dialogue_branch = dialogue_tree[relation['relation_status']]
-    dialogue:list[dict[str, Crew|str]] = []
+    dialogue:list[dict] = []
     if convo_starter == player:
         dialogue_leaf = random.choice(dialogue_branch['respond'])
         for index, string in enumerate(dialogue_leaf):
@@ -317,7 +317,7 @@ def get_dialogue(relation:dict) -> list[dict[str, Crew |str]]:
     return dialogue
 
 
-def _translate(dialogue_string:str, character:Crew) -> str:
+def _translate(dialogue_string:str, character) -> str:
     punctuation = dialogue_string[-1]
     words = dialogue_string[:-1].split(' ')
     new_dialogue = ''

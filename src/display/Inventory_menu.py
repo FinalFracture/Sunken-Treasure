@@ -2,7 +2,7 @@ import pygame
 from math import floor
 from src.mechanics.tools import GameItem
 from src.display.screen_components import IconBG, ItemStatBox, UiButton
-from src.display import ViewID, OVERLAY
+from src.utils.enumerations import ViewID
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
 from src.event_managing import EVENT_HANDLER
@@ -70,7 +70,6 @@ class InventoryMenu(pygame.sprite.Sprite):
 
         while self.active:
             page_check = self.inv_page_index
-            EVENT_HANDLER.run(self.input)
             
             if page_check != self.inv_page_index:
                 self.menu_refresh()

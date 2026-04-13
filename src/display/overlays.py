@@ -1,22 +1,14 @@
-from enum import Enum, auto
 from pygame.surface import Surface
 from pygame.rect import Rect
+from src.event_managing import EVENT_HANDLER, Trigger
 from src.utils.settings import SCREEN_HEIGHT, SCREEN_WIDTH
 from src.utils.cameras import overlay_layers, overlay_sprites
 from src.utils.timer import Timer
-from src.display.screen_components import CrewQuartersHUD, Textbox, Generic,ItemStatBox, UiButton, HoverMessage, IconBG, UpgradeIconBg
-from src.display.character_sprites import CharacterSprite
-from src.display.Inventory_menu import InventoryMenu
-from src.display.items_ui import ItemSprite, CrewSprite
+from src.utils.enumerations import ViewID
+from src.display.screen_components import *
 from src.characters.player_character import PlayerCharacter
 
-class ViewID(Enum):
-    OVERWORLD = auto()
-    INVENTORY = auto()
-    TRADE = auto()
-    UPGRADE = auto()
 
-CREW_QUARTERS = CrewQuartersHUD()
 
 _trade:dict[str, tuple[int,int]] = {
     'player_inventory': (55, 3),
@@ -42,98 +34,111 @@ _compendium:dict[str, tuple[int,int]] = {
 
 class View:
     def __init__(self) -> None:
-        bg_surface = Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        view_bg = Generic(overlay_sprites, bg_surface, z=overlay_layers['hud_background'])
-        self.child_objects = [view_bg]
+        self.screen_objs:list[Sprite|View] = []
+        self.screen_obj_positions:dict[str, tuple[int,int]]
+        self.view_id = ViewID.NULL
 
-    def activate(self, player) -> None:
-        overlay_sprites.add(self.child_objects)
-        self._assign_player(player)
+    def activate(self) -> None:
+        self._position_screen_objs()
+        for obj in self.screen_objs:
+            try:
+                obj.activate()
+                overlay_sprites.add(obj)
+            except:
+                print(f"{type(obj)} does not have activate method")
 
     def deactivate(self) -> None:
-        overlay_sprites.remove(self.child_objects)
+        overlay_sprites.remove(self.screen_objs)
 
-    def _assign_player(self, player:PlayerCharacter) -> None:
-        player_crew = player.crew_list
-        CREW_QUARTERS.populate(player_crew)
+    def _position_screen_objs(self) -> None:
+        for obj in self.screen_objs:
+            try:
+                coord:dict[str, int] = self.screen_obj_positions.get(type(obj))
+                obj.set_position(**coord)
+            except Exception as e:
+                print(e)
+                print(type(obj))
 
 class OverworldView(View):
-    def __init__(self):
+    def __init__(self, player):
         super().__init__()
         self.view_id = ViewID.OVERWORLD
-        self.child_object_positions:dict[str, tuple[int,int]] = {
-            #(x_left,y_top)
-            'hud_card_coin':(0,3),
-            'hud_card_cargo':(0,70),
-            'hud_card_speed':(0,137),
-            'hud_card_bearing':(0,204),
-            'hud_card_time': (0,271),
-            'hud_card_wind':(0,338),
-            'hud_card_weather':(0,405),
-            'crew_quarters': None, #use math to place centerx = SCREEN_WIDTH/2
-            'dialogue_box': (0,0), #fill out on desktop
-            'yes_no_box': (0,0),
+        self.screen_obj_positions:dict[str, tuple[int,int]] = {
+            # (x_left, y_top)
+            CoinCard: {'left': 0, 'top': 3},
+            CargoCard: {'left': 0, 'top': 70},
+            SpeedCard: {'left': 0, 'top': 137},
+            BearingCard: {'left': 0, 'top': 204},
+            'hud_card_time': {'left': 0, 'top': 271},
+            'hud_card_wind': {'left': 0, 'top': 338},
+            'hud_card_weather': {'left': 0, 'top': 405},
+            CrewDisplay: {'bottom': SCREEN_HEIGHT, 'centerx':SCREEN_WIDTH/2},
+            DialogBox: {'left': 0, 'top': 0},
+            'yes_no_box': {'left': 0, 'top': 0},
         }
-        self.child_objects.append(CREW_QUARTERS)
-        self.hud_cards = {}
-        self.card_always_on = False
-        self.timers = {
-            'flash_cards':Timer(6000, starting_func=self._activate_hud_cards, ending_func=self._deactivate_hud_cards)
-        }
+        self.screen_objs.append(player)
+        self._build_view()
+        
+    def _build_view(self) -> None:
+        self.coin_card = CoinCard()
+        self.cargo_card = CargoCard()
+        self.bearing_card = BearingCard()
+        self.speed_card = SpeedCard()
+        self.dialogue_box = DialogBox()
+        self.crew_display = CrewDisplay()
+        self.screen_objs.append(self.coin_card)
+        self.screen_objs.append(self.cargo_card)
+        self.screen_objs.append(self.bearing_card) 
+        self.screen_objs.append(self.speed_card)
+        self.screen_objs.append(self.dialogue_box)
+        self.screen_objs.append(self.crew_display)
 
-    def _activate_hud_cards(self) -> None:
-        for card in self.hud_cards.values():
-            card.activate()
+    def add_screen_obj(self, *screen_objs:Sprite):
+        self.screen_objs.extend(screen_objs)
 
-    def _deactivate_hud_cards(self) -> None:
-        for card in self.hud_cards.values():
-            card.deactivate()
-
-    def _position_hud_cards(self) -> None:
-        for card in self.hud_cards.values():
-            coord = self.child_object_positions['hud_card_' + card.card_type]
-            card.set_position(top=coord[1], left=coord[0])
-
-    def change_hud_cards(self, hud_cards:dict) -> None:
-        self.hud_cards = hud_cards
-        self._position_hud_cards()
-    
-    def flash_hud_cards(self) -> None:
-        self.timers['flash_cards'].activate()
 
 class InventoryView(View):
     def __init__(self) -> None:
         super().__init__()
         self.view_id = ViewID.INVENTORY
         self.child_object_positions:dict[str, tuple[int,int]] = {
-            'inventory': (55,3),
-            'crew_quarters': (0,0), #fill out on desktop
-            'clipboard': (320,3), #adjust on desktop
+            InventoryDisplay: (55,3),
+            CrewDisplay: (0,0), #fill out on desktop
+            ClipboardDisplay: (320,3), #adjust on desktop
             'exit': (0,0)
         }
-        self.child_objects.append(CREW_QUARTERS)
-    
-    def _assign_player(self, player:PlayerCharacter) -> None:
-        super()._assign_player(player)
-        player_inv = player.inventory_ui
-        if player_inv not in self.child_objects:
-            self.child_objects.append(player_inv)
-        inv_cord_top = self.child_object_positions['inventory'][1]
-        inv_cord_left = self.child_object_positions['inventory'][0]
-        player_inv.set_position(top=inv_cord_top, left=inv_cord_left)
+        #inv_cord_top = self.child_object_positions['inventory'][1]
+        #inv_cord_left = self.child_object_positions['inventory'][0]
+        #player_inv.set_position(top=inv_cord_top, left=inv_cord_left)
 
-        
+
 class ViewsManager:
-    def __init__(self) -> None:
+    def __init__(self, player) -> None:
         self.active_view:View = None
         self.views:dict[int, View] = {
-            0: OverworldView(),
-            1: InventoryView()
+            ViewID.OVERWORLD: OverworldView(player),
+            ViewID.INVENTORY: InventoryView()
         }
-        self.change_view(ViewID.OVERWORLD)
+        for view in self.views.values():
+            view.deactivate()
 
-    def change_view(self, view_number:int, player) -> None:
-        if self.active_view:
+    def change_view(self, view_number:int) -> None:
+        if not self.active_view:
+            self.active_view = self.views[view_number]
+            self.active_view.activate()
+        else:
             self.active_view.deactivate()
             self.active_view = self.views[view_number]
-            self.active_view.activate(player)
+            self.active_view.activate()
+        EVENT_HANDLER.set_context(self.active_view.screen_objs)
+              
+    def recieve_triggers(self, triggers:list[Trigger]) -> None:
+        for trigger in triggers:
+            for obj in self.active_view.screen_objs:
+                if hasattr(obj, "recieve_triggers"):
+                    obj.recieve_triggers(self.trigger_queue)
+
+            if trigger.type == "OPEN_INVENTORY":
+                self.change_view(ViewID.INVENTORY)
+            if trigger.type == "CLOSE_INVENTORY":
+                self.change_view(ViewID.OVERWORLD)

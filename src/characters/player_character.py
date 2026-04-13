@@ -1,22 +1,23 @@
 import pygame
 import random
-from src.event_managing import EVENT_HANDLER
+from src.event_managing import Trigger, EVENT_HANDLER
 from src.utils.settings import * 
 from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
-from src.display import CharacterSprite, InventoryMenu, ViewID, OVERLAY
+from src.utils.enumerations import ViewID
+from src.display.character_sprites import CharacterSprite
+from src.display.screen_components import InventoryDisplay
+from src.display.Inventory_menu import InventoryMenu
 from src.characters import Character, BOAT_STATS
 from src.display.screen_components import HUDCard
 
-
-
 class PlayerCharacter(Character): 
-    def __init__(self, game, ship_type):
+    def __init__(self, ship_type):
         super().__init__(ship_type)
-        self.game = game
         self.sprite = CharacterSprite(self, starting_pos=(0,0), ship_type=ship_type)
         self.stats = BOAT_STATS[ship_type]
-        self.inventory_ui = InventoryMenu(self, self.stats['inv_pages'], self.stats['crew_slots'])
+        self.inventory = []
+        self.inventory_ui = InventoryMenu(self, self.stats['inv_pages'])
         self.timers = {}
         self.gps_coord:tuple[float, float] = (0,0)
         self.speed = self.stats.get("speed")
@@ -26,7 +27,6 @@ class PlayerCharacter(Character):
         self.is_key_pressed = False
         self.hud_cards:dict[str, HUDCard] = {}
         self._start_hud_cards()
-        OVERLAY.crew_quarters_hud.populate(self.crew_list)
 
     def _interact(self):
         #check for interactions with the worlds objects
@@ -70,24 +70,23 @@ class PlayerCharacter(Character):
                 hud_card = crew.hud_card
                 hud_card.activate()                
                 self.hud_cards[hud_card_type] = hud_card
-        OVERLAY.change_hud_cards(self.hud_cards)
 
     def update(self,dt):
         if self.state == 'normal':
             self._stat_error_handling()
-            EVENT_HANDLER.run(self.overworld_contorls)
             self._set_speed_and_coords()
             super().update(dt)
   
-    def overworld_contorls(self, keys, mouse_pos, dt):
+    def input(self, keys, mouse_pos, buttons, events, dt):
         self.sprite.movement_input(keys, mouse_pos, dt, self.speed)
 
-        def _single_click_operations():
-            for crew in self.crew_list:
-                if crew.sprite.rect.collidepoint(mouse_pos):
-                    self.is_clicking = True
-                    key_num = self.crew_list.index(crew) + 1
-                    _activate_crew(key_num)
+        def _single_click_operations(event):
+            if event.button == 1:
+                for crew in self.crew_list:
+                    if crew.sprite.rect.collidepoint(mouse_pos):
+                        self.is_clicking = True
+                        key_num = self.crew_list.index(crew) + 1
+                        _activate_crew(key_num)
 
         def _activate_crew(key_num):
             try:
@@ -99,35 +98,34 @@ class PlayerCharacter(Character):
                 pass
                 # play reject sound
 
-        def _single_press_operations():
+        def _single_press_operations(event):
             key_num = 0
 
-            if keys[pygame.K_1]:
+            if event.key == pygame.K_1:
                 key_num = 1
 
-            elif keys[pygame.K_2]:
+            elif event.key ==pygame.K_2:
                 key_num = 2
 
-            elif keys[pygame.K_SPACE]: #interact with objects
+            elif event.key == pygame.K_SPACE: #interact with objects
                 self._interact()
 
-            elif keys[pygame.K_LCTRL]: #Overlay hints
-                OVERLAY.flash_hud_cards()
+            elif event.key ==pygame.K_LCTRL: #Overlay hints
+                pass
 
-            elif keys[pygame.K_e]:
-                OVERLAY.change_view(ViewID.INVENTORY, player=self)
+            elif event.key ==pygame.K_e:
+                print("Called")
+                EVENT_HANDLER.emit(Trigger("OPEN_INVENTORY", self.inventory))
 
             if key_num > 0:
                 _activate_crew(key_num)
 
-        if EVENT_HANDLER.is_key_pressed == False:
-            _single_press_operations()
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                _single_click_operations(event)
+            if event.type == pygame.KEYDOWN:
+                _single_press_operations(event)
 
-        if not self.is_clicking and pygame.mouse.get_pressed()[0]:
-            _single_click_operations()
-
-        elif not pygame.mouse.get_pressed()[0]:
-            self.is_clicking = False
 
     def resume_play(self):
         self.overlay.position_crew_icons(self.crew_list)
@@ -162,4 +160,4 @@ class PlayerCharacter(Character):
             hud_card = self.hud_cards[crew_member.hud_card_type]
             self.hud_cards[hud_card] = crew_member.hud_card
             hud_card.activate()
-            OVERLAY.change_hud_cards(self.hud_cards)
+            #OVERLAY.change_hud_cards(self.hud_cards)
