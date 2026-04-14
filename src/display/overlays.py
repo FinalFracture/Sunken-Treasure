@@ -100,15 +100,24 @@ class InventoryView(View):
     def __init__(self) -> None:
         super().__init__()
         self.view_id = ViewID.INVENTORY
-        self.child_object_positions:dict[str, tuple[int,int]] = {
+        self.screen_obj_positions:dict[str, tuple[int,int]] = {
             InventoryDisplay: (55,3),
             CrewDisplay: (0,0), #fill out on desktop
             ClipboardDisplay: (320,3), #adjust on desktop
             'exit': (0,0)
         }
-        #inv_cord_top = self.child_object_positions['inventory'][1]
-        #inv_cord_left = self.child_object_positions['inventory'][0]
-        #player_inv.set_position(top=inv_cord_top, left=inv_cord_left)
+
+        self._build_view()
+
+    def _build_view(self) -> None:
+        bg = Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+         
+        self.background = Generic(overlay_sprites)
+        self.inventory_display = InventoryDisplay()
+        self.description_display = DescriptionDisplay()
+        self.screen_objs.extend(self.inventory_display,
+                                self.description_display)
+        
 
 class ViewsManager:
     def __init__(self, player) -> None:
