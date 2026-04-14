@@ -1,7 +1,7 @@
 import pygame
 from math import floor
 from src.mechanics.tools import GameItem
-from src.display.screen_components import IconBG, ItemStatBox, UiButton
+from src.display.screen_components import IconBG, DescriptionDisplay, UiButton
 from src.utils.enumerations import ViewID
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
@@ -52,7 +52,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))
-        self.item_stats_display = ItemStatBox(self.rect, (25,10))
+        self.item_stats_display = DescriptionDisplay(self.rect, (25,10))
 
         #items to display setup
         self.menu_ui = [self, self.item_stats_display] + self.item_stats_display.ui_elements

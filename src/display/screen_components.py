@@ -49,7 +49,7 @@ class Overlay(Sprite):
             overlay_sprites.add(crew.sprite)
             crew.sprite.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
 
-class ItemStatBox(Sprite):
+class DescriptionDisplay(Sprite):
     #the sprite to display an items value, description, weight, and other values
     #while the inventory menu is active
     def __init__(self, relative_rect: pygame.rect.Rect, offset: tuple, z=overlay_layers['menu_aux']):    

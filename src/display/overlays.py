@@ -96,7 +96,6 @@ class OverworldView(View):
     def add_screen_obj(self, *screen_objs:Sprite):
         self.screen_objs.extend(screen_objs)
 
-
 class InventoryView(View):
     def __init__(self) -> None:
         super().__init__()
@@ -110,7 +109,6 @@ class InventoryView(View):
         #inv_cord_top = self.child_object_positions['inventory'][1]
         #inv_cord_left = self.child_object_positions['inventory'][0]
         #player_inv.set_position(top=inv_cord_top, left=inv_cord_left)
-
 
 class ViewsManager:
     def __init__(self, player) -> None:
