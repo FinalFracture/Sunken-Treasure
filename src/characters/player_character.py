@@ -6,7 +6,7 @@ from src.utils.timer import Timer
 from src.utils.cameras import all_sprites, screen_update
 from src.utils.enumerations import ViewID
 from src.display.character_sprites import CharacterSprite
-from src.display.screen_components import InventoryDisplay
+#from src.display.screen_components import InventoryDisplay
 from src.display.Inventory_menu import InventoryMenu
 from src.characters import Character, BOAT_STATS
 from src.display.screen_components import HUDCard

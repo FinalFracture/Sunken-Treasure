@@ -52,10 +52,10 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.exit_button = pygame.Rect(0,0, 11, 11)
         self.exit_button.center = ((self.rect.left + 339, self.rect.top + 12))
-        self.item_stats_display = DescriptionDisplay(self.rect, (25,10))
+        self.item_stats_display = DescriptionDisplay(self.rect)
 
         #items to display setup
-        self.menu_ui = [self, self.item_stats_display] + self.item_stats_display.ui_elements
+        self.menu_ui = [self, self.item_stats_display] + self.item_stats_display.children
         self.inv_pages:dict[int, dict[int, IconBG]] = {}
         _setup_inv_slots()
         self.active_inv_page:dict[int, IconBG] = self.inv_pages[self.inv_page_index]

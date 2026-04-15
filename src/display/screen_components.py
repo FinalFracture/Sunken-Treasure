@@ -6,12 +6,13 @@ from src.utils.enumerations import CardID
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
 from src.utils.enumerations import ViewID
+from src.display import OverlaySprite
 from src.story.generic_dialogue import get_dialogue
 from src.event_managing import EVENT_HANDLER
 
-class Overlay(Sprite):
+class Overlay(OverlaySprite):
     def __init__(self, owner):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.master = owner
         self.image = pygame.image.load('assets/images/hud/heads_up.png').convert_alpha()
         self.rect = self.image.get_rect(centerx=SCREEN_WIDTH/2, bottom=SCREEN_HEIGHT)
@@ -49,37 +50,34 @@ class Overlay(Sprite):
             overlay_sprites.add(crew.sprite)
             crew.sprite.rect.topleft = self.crew_icon_topleft_positions[f'crew_member_{crew_index+1}']
 
-class DescriptionDisplay(Sprite):
+class DescriptionDisplay(OverlaySprite):
     #the sprite to display an items value, description, weight, and other values
     #while the inventory menu is active
-    def __init__(self, relative_rect: pygame.rect.Rect, offset: tuple, z=overlay_layers['menu_aux']):    
-        super().__init__(overlay_sprites)
+    def __init__(self, relative_rect: pygame.rect.Rect):    
+        super().__init__()
         self.image = pygame.image.load('assets/images/HUD/item_stat_textbox.png')
-        self.rect = self.image.get_rect(topleft = (relative_rect.x + offset[0], relative_rect.y + offset[1]))
+        pos_offset = (25,10)
+        self.rect = self.image.get_rect(topleft = (relative_rect.x + pos_offset[0], 
+                                                   relative_rect.y + pos_offset[1]))
+        
         self.item_name_display = HoverMessage(self, offset = (10, 5), fontsize=12)
         self.item_value_display = HoverMessage(self, offset = (10,20), fontsize=12)
         self.item_description_line1 = HoverMessage(self, offset = (10,35), fontsize=12)
         self.item_description_line2 = HoverMessage(self, offset = (10,50), fontsize=12)
-        self.z = z
-        self.ui_elements = [self.item_name_display, self.item_value_display, self.item_description_line1, self.item_description_line2]
-
-class UiButton(Sprite):
+        self.z = overlay_layers['menu_aux']
+        self.children.extend((self.item_name_display, self.item_value_display, self.item_description_line1, self.item_description_line2))
+         
+class UiButton(OverlaySprite):
     def __init__(self, button_text:str, button_func:callable, func_arg, refrence_rect:pygame.Rect, topleft_offset:tuple[int,int], z=overlay_layers['menu_elements']):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.name = button_text
         self.image = self._image_setup()
         self.rect = self.image.get_rect(topleft = (refrence_rect.x + topleft_offset[0], refrence_rect.y + topleft_offset[1]))
         self.z = z
         self.function = button_func
         self.arg = func_arg
-        self.textboxes = [Textbox(self, text=button_text, max_rect=self.rect)]
-
-    def update(self, dt) -> None:
-        self._update_textboxes()
- 
-    def _update_textboxes(self) -> None:
-        if (self in overlay_sprites) and (self.textboxes not in overlay_sprites):
-            overlay_sprites.add(self.textboxes)
+        self.children.append(Textbox(self, text=button_text, max_rect=self.rect))
+         
 
     def position(self, reference_rect:pygame.Rect, offset:tuple[int,int]) -> None:
         self.rect.x = reference_rect.x + offset[0]
@@ -93,9 +91,9 @@ class UiButton(Sprite):
     def click(self) -> None:
         self.function(self.arg)
 
-class IconBG(Sprite):
+class IconBG(OverlaySprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.image = pygame.image.load('assets/images/HUD/icon_bg.png').convert_alpha()
         self.rect = self.image.get_rect(center = pos)
         self.subject = subject
@@ -103,7 +101,7 @@ class IconBG(Sprite):
         self.indicator:bool = None
         self.value_display = Textbox(self, max_rect=self.rect, fontsize= 8, z=overlay_layers['text'])
         self.indicator:MenuIndicator = MenuIndicator(self.rect)
-        overlay_sprites.remove(self.indicator)
+        self.children.extend((MenuIndicator, self.value_display))
 
     def update(self, dt): 
         if self.subject:
@@ -129,9 +127,9 @@ class IconBG(Sprite):
             elif self.subject is not None and self.subject.selected:
                 self.click(toggle=0)
 
-class UpgradeIconBg(Sprite):
+class UpgradeIconBg(OverlaySprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.image = pygame.image.load('assets/images/HUD/upgrade_icon_bg.png').convert_alpha()
         self.rect = self.image.get_rect(center = pos)
         self.subject = subject
@@ -139,6 +137,7 @@ class UpgradeIconBg(Sprite):
         self.indicator = None
         self.selected = False 
         self.value_display = Textbox(self, fontsize= 8, z=overlay_layers['text'])
+        self.children.append(self.value_display)
 
     def update(self, dt): 
         if self.subject:
@@ -167,12 +166,12 @@ class UpgradeIconBg(Sprite):
             if self.subject and self.selected:
                 self.deselect()
 
-class MenuIndicator(Sprite):
+class MenuIndicator(OverlaySprite):
     """When the player selects items to purchase, this class highlights the selected item slots to 
     visually indicate what has been selected. This will also apply to any other menues where inventory
     slots are selected, and not immediately resolved."""
     def __init__(self, owning_rect, z = overlay_layers['menu_aux']):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.z = z
         self.reference_rect = owning_rect
         self.image = pygame.Surface((owning_rect.width, owning_rect.height))
@@ -182,14 +181,11 @@ class MenuIndicator(Sprite):
         self.rect.center = owning_rect.center
         self.image.fill(color='Green')
 
-    def indicate(self) -> None:
-        overlay_sprites.add(self)
+    def activate(self) -> None:
+        super().activate()
         self.rect.center = self.reference_rect.center
 
-    def de_indicate(self) -> None:
-        overlay_sprites.remove(self)
-
-class HoverMessage(Sprite):
+class HoverMessage(OverlaySprite):
     """This class is a message that displays at its specified coords. it is uninteractable."""
     def __init__(self
                  ,relative_surface:pygame.rect.Rect
@@ -198,7 +194,7 @@ class HoverMessage(Sprite):
                  ,offset = (0,0)
                  ,max_lines = 2 
                  ,color = 'black'):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.relative_surface_sprite = relative_surface
         self.relative_surface = relative_surface.rect
         self.fontsize = fontsize
@@ -224,9 +220,9 @@ class HoverMessage(Sprite):
         #to be called by other classes when they need to modify this classes text
         self.image = self.font.render(self.text, False, self.color)
  
-class Generic(Sprite):
+class Generic(OverlaySprite):
     def __init__(self, display_group, surface_image, z=overlay_layers['menu_items'], offset=(0,0), topleft_pos:tuple[int, int]=(0,0), relative_rect:pygame.rect.Rect|None=None):
-        super().__init__(display_group)
+        super().__init__()
         self.timers = {}
         self.image:Surface = surface_image
         self.relative_rect = relative_rect
@@ -257,14 +253,14 @@ class Generic(Sprite):
     def update(self, dt) -> None:
         super().update()
         
-class Textbox(Sprite):
+class Textbox(OverlaySprite):
     def __init__(self, reference_sprite:Sprite, max_rect:Rect, fontsize=12, z = overlay_layers['text'], offset=(0,0), text='', position='center'):
         """
     Display text on screen.
 
     **Parameters**
     --------------------
-    - reference_sprite(Sprite): 
+    - reference_sprite(OverlaySprite): 
         The sprite that is used as a reference for placement and parent functions
     - fontsize(int): 
         Size of the text to display
@@ -280,7 +276,7 @@ class Textbox(Sprite):
         - middleright
         - middleleft
     """
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.master=reference_sprite
         self.reference_rect = reference_sprite.rect
         self.fontsize = fontsize
@@ -353,13 +349,13 @@ class Textbox(Sprite):
         if self.master not in overlay_sprites:
             self.kill()
 
-class CrewDisplay(Sprite):
+class CrewDisplay(OverlaySprite):
     """A class to create and manage the UI for displaying crew on the HUD and in game menus
     
     """
     
     def __init__(self) -> None:
-        super().__init__(overlay_sprites)
+        super().__init__()
         image_path:str = 'assets/images/hud/crew_quarters/crew_quarters_hud.png'
         self.image:Surface = pygame.image.load(image_path)
         self.rect = self.image.get_rect()
@@ -367,6 +363,9 @@ class CrewDisplay(Sprite):
         self.max_crew:int = 18
         self.current_crew_slots:list[CrewUiSlot] = []
         self.crew_slot_positions:dict[int, tuple[int,int]] = {}
+        self.children.extend(self.current_crew_slots)
+        self._set_crew_slot_positions()
+         
     
     def _set_crew_slot_positions(self) -> None:
         x_padding = 4
@@ -435,12 +434,12 @@ class CrewDisplay(Sprite):
             self.textbox.set_position()
 
     def activate(self) -> None:
-        self._set_crew_slot_positions()
+        super().activate()
         self._position_crew_slots()
 
-class CrewUiSlot(Sprite):
+class CrewUiSlot(OverlaySprite):
     def __init__(self) -> None:
-        super().__init__(overlay_sprites)
+        super().__init__()
         image_path = 'assets/images/hud/crew_quarters/crew_space.png'
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect()
@@ -453,6 +452,8 @@ class CrewUiSlot(Sprite):
                                                  self.place_holder_crew_sprite, 
                                                  offset=(self.crew_icon_left_pixel, self.crew_icon_top_pixel),
                                                  relative_rect=self.rect)
+        self.children.extend(self.crew_image_sprite)
+         
 
     def update(self, *args, **kwargs):
         if  not self.rect.colliderect(self.crew_image_sprite.rect):
@@ -471,9 +472,13 @@ class CrewUiSlot(Sprite):
         self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
         self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
 
-class HUDCard(Sprite):
+    def clear_slot(self) -> None:
+        self.crew_image_sprite.kill()
+        self.crew_image_sprite = self.place_holder_crew_sprite
+
+class HUDCard(OverlaySprite):
     def __init__(self, card_type:str) -> None:
-        super().__init__(overlay_sprites)
+        super().__init__()
         image_path_prefix = 'assets/images/hud/hud_card_'
         self.image_path = image_path_prefix + card_type + '.png'
         self.image = pygame.image.load(self.image_path).convert_alpha()
@@ -481,7 +486,8 @@ class HUDCard(Sprite):
         self.z = overlay_layers['hud_elements']
         textbox_topleft_pixel = (3,3)
         self.textbox = Textbox(self, self.rect, offset=textbox_topleft_pixel, fontsize=8, position='relative')
-        self.kill()
+        self.children.append(self.textbox)
+         
 
     def set_position(self, 
                      top:int=None, 
@@ -504,13 +510,6 @@ class HUDCard(Sprite):
             self.rect.centery = centery
         self.textbox.set_position()
 
-    def activate(self) -> None:
-        overlay_sprites.add(self, self.textbox)
-
-    def deactivate(self) -> None:
-        self.textbox.kill()
-        self.kill()
-
     def update_textbox(self, *args) -> None:
         pass
 
@@ -519,7 +518,8 @@ class CoinCard(HUDCard):
         self.card_type = 'coin'
         super().__init__(self.card_type)
         self.coin_textbox = self.textbox
-
+         
+        
     def update(self, dt) -> None:
         pass
     
@@ -531,6 +531,7 @@ class CargoCard(HUDCard):
         self.card_type = 'cargo'
         super().__init__(self.card_type)
         self.cargo_textbox = self.textbox
+         
 
     def update(self, dt) -> None:
         pass
@@ -543,6 +544,7 @@ class SpeedCard(HUDCard):
         self.card_type = 'speed'
         super().__init__(self.card_type)
         self.speed_textbox = self.textbox
+         
 
     def update(self, dt) -> None:
         pass
@@ -557,18 +559,8 @@ class BearingCard(HUDCard):
         self.meridian_textbox = self.textbox
         clime_textbox_topleft_pixel = (3,18)
         self.clime_textbox = Textbox(self, self.rect, offset=clime_textbox_topleft_pixel, fontsize=8, position='relative')
-        
-
-    def activate(self):        
-        overlay_sprites.add(self.clime_textbox)
-        return super().activate()
-    
-    def deactivate(self):
-        self.clime_textbox.kill()
-        return super().deactivate()
-
-    def update(self, dt) -> None:
-        pass
+        self.children.append(self.clime_textbox)
+         
     
     def update_textbox(self, coords) -> None:
         meridian = f'X: {coords[0]}'
@@ -591,13 +583,13 @@ CARD_MAP = {
     CardID.NULL: None
 }
 
-class DialogBox(Sprite):
+class DialogBox(OverlaySprite):
     
     relations:dict[list[str, str], dict[str, str | int]] = {} 
     #eg. {'gerald lopez and harmony wheeler', {'crew':['gerald lopez', 'harmony wheeler'],'interatctions':4} }
 
     def __init__(self):
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.fontsize  = 16
         self.screen_offset=(27,400)
         self.z = overlay_layers['menu']
@@ -618,8 +610,8 @@ class DialogBox(Sprite):
                                     ,z=overlay_layers['text']
                                     ,offset=(95,10)
                                     ,relative_rect=self.rect)
-        self.display_items = [self, self.textbox, self.speaker_space, self.speaker_icon]
-        overlay_sprites.remove(self.display_items)
+        self.children.extend([self.textbox, self.speaker_space, self.speaker_icon])
+         
         self.test_value = 0
 
     def start_dialogue(self, player_crew, interactee_crew) -> None:
@@ -629,7 +621,7 @@ class DialogBox(Sprite):
         self.dialogue_identifier = ''
         self.dialogue_end = False
         self.ready_to_continue:bool = False
-        overlay_sprites.add(self.display_items)
+        self.activate()
         self._change_dialogue()
         
     def update(self, dt):
@@ -709,7 +701,7 @@ class DialogBox(Sprite):
         self.textbox.set_text(self.shown_characters[int(self.text_on_screen_index)])
 
     def _end_dialogue(self) -> str:
-        overlay_sprites.remove(self.display_items)
+         
         return 'normal'
 
     def _animate_text(self):
@@ -769,21 +761,24 @@ class DialogBox(Sprite):
         if hasattr(self, "textbox"):
             self.textbox.set_position()
 
-class InventoryDisplay(Sprite):
+class InventoryDisplay(OverlaySprite):
     """
     A class that holds UI elements to display a characters inventory. 
     """
-    def __init__(self, owner) -> None:
-        super().__init__(overlay_sprites)
+    def __init__(self) -> None:
+        super().__init__()
         self.image = pygame.image.load('assets/images/hud/menu_bg.png')
         self.rect = self.image.get_rect()
         self.z = overlay_layers['hud']
         self.all_spaces = []
         self.inv_pages:dict[int, list] = {}
-        
-class ClipboardDisplay(Sprite):
+        self.desc_display = DescriptionDisplay(self.rect)
+        self.children.append(self.desc_display)
+         
+class ClipboardDisplay(OverlaySprite):
     def __init__(self) -> None:
-        super().__init__(overlay_sprites)
+        super().__init__()
         self.image = pygame.image.load('assets/images/hud/clipboard.png')
         self.rect = self.image.get_rect()
         self.z = overlay_layers['hud']
+         

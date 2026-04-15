@@ -48,7 +48,12 @@ class View:
                 print(f"{type(obj)} does not have activate method")
 
     def deactivate(self) -> None:
-        overlay_sprites.remove(self.screen_objs)
+        for obj in self.screen_objs:
+            try:
+                obj.deactivate()
+                overlay_sprites.add(obj)
+            except:
+                print(f"{type(obj)} does not have deactivate method")
 
     def _position_screen_objs(self) -> None:
         for obj in self.screen_objs:
@@ -111,12 +116,11 @@ class InventoryView(View):
 
     def _build_view(self) -> None:
         bg = Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-         
-        self.background = Generic(overlay_sprites)
+        bg.fill('black')
+        self.background = Generic(overlay_sprites, bg, z=overlay_layers['hud_background'])
         self.inventory_display = InventoryDisplay()
-        self.description_display = DescriptionDisplay()
-        self.screen_objs.extend(self.inventory_display,
-                                self.description_display)
+        self.screen_objs.extend([self.background,
+                                self.inventory_display])
         
 
 class ViewsManager:
