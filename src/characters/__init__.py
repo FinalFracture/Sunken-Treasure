@@ -39,11 +39,7 @@ class Character():
         self.stats = BOAT_STATS[ship_type]
         self.gold:int = 50
         self.timers:dict = {}
-        self.crew_list:list[Crew] = [build_crew_member(self, 'angler'),
-                                     build_crew_member(self, 'explorer'),
-                                     build_crew_member(self, 'helmsman'),
-                                     build_crew_member(self, 'trader'),
-                                     build_crew_member(self, 'quartermaster')] 
+        self.crew_list:list[Crew] = [] 
         self.active_crew:Crew = None
         self.state = 'normal'
         self.animations:dict = {'left': [], 'right': []}
@@ -69,7 +65,7 @@ class Character():
     def update(self, dt):
         pass
 
-    def get_crew(self, crew_member:Crew) -> None:
+    def add_crew(self, crew_member:Crew) -> None:
         self.crew_list.append(crew_member)
 
     def give_crew(self, new_owner, crew_name:str) -> Crew:

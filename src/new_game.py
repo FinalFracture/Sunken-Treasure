@@ -6,6 +6,7 @@ from src.utils.timer import Timer
 from src.utils.enumerations import ViewID
 from src.display.overlays import ViewsManager
 from src.characters.player_character import PlayerCharacter
+from src.mechanics.crew import Crew, build_crew_member
 #from maps import Map
 
 
@@ -14,14 +15,14 @@ class main_loop:
     def __init__(self, game) -> None:
         self.game = game
         self.player = PlayerCharacter('galleon')
+        self.player.add_crew(crew_member=build_crew_member(self.player, 'explorer'))
         self.view_manager = ViewsManager(self.player)
         self.view_manager.change_view(ViewID.OVERWORLD)
-        self.maps = []        
+        self.maps = []  
 
     def run(self):
-        #start every frame with a clean screen
         EVENT_HANDLER.run()
-        self.view_manager.recieve_triggers(EVENT_HANDLER.trigger_queue)
+        self.view_manager.run()
         screen_update(focus=self.player)
         Timer.update_all()
         EVENT_HANDLER.clear_triggers()

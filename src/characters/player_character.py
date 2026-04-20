@@ -17,16 +17,10 @@ class PlayerCharacter(Character):
         self.sprite = CharacterSprite(self, starting_pos=(0,0), ship_type=ship_type)
         self.stats = BOAT_STATS[ship_type]
         self.inventory = []
-        self.inventory_ui = InventoryMenu(self, self.stats['inv_pages'])
         self.timers = {}
-        self.gps_coord:tuple[float, float] = (0,0)
+        self.gps_coord:tuple[int, int] = (0,0)
         self.speed = self.stats.get("speed")
-        self.knotical_speed = 0
         self.gold = 0
-        self.is_clicking = False
-        self.is_key_pressed = False
-        self.hud_cards:dict[str, HUDCard] = {}
-        self._start_hud_cards()
 
     def _interact(self):
         #check for interactions with the worlds objects
@@ -49,33 +43,20 @@ class PlayerCharacter(Character):
     def _set_speed_and_coords(self) -> None:
         # add card function here to update speed and gpd coords
         self.gps_coord = (int(self.sprite.rect.x / 7), int((self.sprite.rect.y / 7)*-1))
-        bearing_card = self.hud_cards.get('bearing')
-        if bearing_card:
-            bearing_card.update_textbox(self.gps_coord)
+        knotical_speed = 0
         if self.sprite.moving:
-            self.knotical_speed = round((((self.speed-100)/100)*7.9)+11.8) 
+            EVENT_HANDLER.emit(Trigger("UPDATE_BEARING", self.gps_coord))
+            knotical_speed = round((((self.speed-100)/100)*7.9)+11.8) 
         else:
-            self.knotical_speed = 0
-        # speed_card = self.hud_cards.get('speed')
+            knotical_speed = 0
 
     def _stat_error_handling(self):
         #this will check for stats that attempt to go over the maximum, like gold exceeding 99,999,999
         if self.gold > 99999999:
             self.gold = 99999999
 
-    def _start_hud_cards(self) -> None:
-        for crew in self.crew_list:
-            if hasattr(crew, "hud_card"):
-                hud_card_type = crew.hud_card_type
-                hud_card = crew.hud_card
-                hud_card.activate()                
-                self.hud_cards[hud_card_type] = hud_card
-
     def update(self,dt):
-        if self.state == 'normal':
-            self._stat_error_handling()
-            self._set_speed_and_coords()
-            super().update(dt)
+        super().update(dt)
   
     def input(self, keys, mouse_pos, buttons, events, dt):
         self.sprite.movement_input(keys, mouse_pos, dt, self.speed)
@@ -114,7 +95,6 @@ class PlayerCharacter(Character):
                 pass
 
             elif event.key ==pygame.K_e:
-                print("Called")
                 EVENT_HANDLER.emit(Trigger("OPEN_INVENTORY", self.inventory))
 
             if key_num > 0:
@@ -125,39 +105,26 @@ class PlayerCharacter(Character):
                 _single_click_operations(event)
             if event.type == pygame.KEYDOWN:
                 _single_press_operations(event)
+        self._set_triggers()
 
+    def _set_triggers(self) -> None:
+        self._set_speed_and_coords()
+        self._stat_error_handling()
 
     def resume_play(self):
         self.overlay.position_crew_icons(self.crew_list)
         return super().resume_play()
-
-    def show_inventory(self) -> bool:
-        self.state = 'inventory'
-        Timer.pause_all()
-        self.deselect_tools()
-        while self.state != 'normal':
-            self.state = self.inventory_ui.show_menu(self.crew_list)
-            screen_update(focus=self)
-        Timer.resume_all()
-        return True
             
     def add_to_inventory(self, item):
-        return self.inventory_ui.add_to_inventory(item)
-
-    def get_inv_level(self) -> str:
-        """
-        Return an int as a string, representing the number of full inv_slots for the player"
-        """
-        return str(self.inventory_ui.full_slots)
+        return self.inventory.add(item)
     
     def update_money(self, coins:int) -> None:
         self.gold += coins
         self.hud_cards['coin'].update
 
-    def get_crew(self, crew_member) -> None:
-        super().get_crew(crew_member)
+    def add_crew(self, crew_member) -> None:
+        super().add_crew(crew_member)
+        EVENT_HANDLER.emit(Trigger("ADD_CREW", crew_member))
         if hasattr(crew_member, "hud_card"):
-            hud_card = self.hud_cards[crew_member.hud_card_type]
-            self.hud_cards[hud_card] = crew_member.hud_card
-            hud_card.activate()
-            #OVERLAY.change_hud_cards(self.hud_cards)
+            hud_card = crew_member.hud_card
+            EVENT_HANDLER.emit(Trigger("ACTIVATE_HUD_CARD", hud_card))

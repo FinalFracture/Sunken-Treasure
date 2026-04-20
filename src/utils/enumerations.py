@@ -3,6 +3,7 @@ from enum import IntEnum, auto
 class ViewID(IntEnum):
     NULL = 0
     OVERWORLD = auto()
+    DIALOGUE = auto()
     INVENTORY = auto()
     TRADE = auto()
     UPGRADE = auto()

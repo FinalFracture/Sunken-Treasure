@@ -627,8 +627,7 @@ class Crew:
         self.tool:Tool = TOOL_MAP[role_attrs.get('tool')](self)
         self.class_type = role_attrs.get('class')
         self.rarity = role_attrs.get('rarity')
-        self.hud_card_type:str = role_attrs.get('hud_card')
-        self._setup_hud_card()
+        self.hud_card:str = role_attrs.get('hud_card')
         self.description = [role_attrs.get('description1'), role_attrs.get('description2')]
         self.archetype = random.choice(list(archetype_vocabularies.keys()))
         self.sprite = CrewSprite(role_attrs.get('tool'), self)
@@ -636,21 +635,7 @@ class Crew:
         self.master = None
         self.selected:bool = False
         self._init_skills()
-
-    def _setup_hud_card(self) -> None:
-        try:
-            self.hud_card:HUDCard = CARD_MAP[self.hud_card_type]()
-        except:
-           pass
     
-    def activate_hud_card(self) -> None:
-       if self.hud_card:
-           self.hud_card.activate()
-    
-    def deactivate_hud_card(self) -> None:
-       if self.hud_card:
-           self.hud_card.deactivate()
-
     def _init_skills(self) -> None:
         self.tool_use_rate:int = 0
         self.tool_effeciency_modifier:int = 0

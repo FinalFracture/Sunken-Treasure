@@ -34,7 +34,7 @@ _compendium:dict[str, tuple[int,int]] = {
 
 class View:
     def __init__(self) -> None:
-        self.screen_objs:list[Sprite|View] = []
+        self.screen_objs:list[Sprite] = [] # all top level children of the view
         self.screen_obj_positions:dict[str, tuple[int,int]]
         self.view_id = ViewID.NULL
 
@@ -51,7 +51,6 @@ class View:
         for obj in self.screen_objs:
             try:
                 obj.deactivate()
-                overlay_sprites.add(obj)
             except:
                 print(f"{type(obj)} does not have deactivate method")
 
@@ -61,13 +60,69 @@ class View:
                 coord:dict[str, int] = self.screen_obj_positions.get(type(obj))
                 obj.set_position(**coord)
             except Exception as e:
-                print(e)
-                print(type(obj))
+                pass
+    
+    def check_triggers(self, triggers:list[Trigger]) -> None:
+        for obj in self.screen_objs:
+            if hasattr(obj, "check_triggers"):
+                obj.check_triggers(triggers)
 
 class OverworldView(View):
     def __init__(self, player):
         super().__init__()
         self.view_id = ViewID.OVERWORLD
+        self.screen_obj_positions:dict[str, tuple[int,int]] = {
+            # (x_left, y_top)
+            CoinCard: {'left': 0, 'top': 3},
+            CargoCard: {'left': 0, 'top': 70},
+            SpeedCard: {'left': 0, 'top': 137},
+            BearingCard: {'left': 0, 'top': 204},
+            'hud_card_time': {'left': 0, 'top': 271},
+            'hud_card_wind': {'left': 0, 'top': 338},
+            'hud_card_weather': {'left': 0, 'top': 405},
+            CrewDisplay: {'bottom': SCREEN_HEIGHT, 'centerx':SCREEN_WIDTH/2},
+        }
+        self.screen_objs.append(player)
+        self._build_view()
+        
+    def _build_view(self) -> None:
+        self.coin_card = CoinCard()
+        self.cargo_card = CargoCard()
+        self.bearing_card = BearingCard()
+        self.speed_card = SpeedCard()
+        self.crew_display = CrewDisplay()
+        self.screen_objs.append(self.crew_display)
+
+    def add_screen_obj(self, *screen_objs:Sprite):
+        self.screen_objs.extend(screen_objs)
+
+    def check_triggers(self, triggers:list[Trigger]):
+        for trigger in triggers:
+            if trigger.type == f"ACTIVATE_HUD_CARD":
+                match trigger.payload:
+                    case CardID.BEARING:
+                        self.screen_objs.append(self.bearing_card)
+                        self.bearing_card.activate()
+                    case CardID.SPEED:
+                        self.screen_objs.append(self.speed_card)
+                        self.speed_card.activate()
+                    case CardID.CARGO: 
+                        self.screen_objs.append(self.cargo_card)
+                        self.cargo_card.activate()
+                    case CardID.COIN:
+                        self.screen_objs.append(self.coin_card)
+                        self.coin_card.activate()
+                self._position_screen_objs()
+
+            if trigger.type == "ADD_CREW":
+                self.crew_display.populate(trigger.payload)
+                
+        super().check_triggers(triggers)
+
+class DiaogueView(View):
+    def __init__(self, player):
+        super().__init__()
+        self.view_id = ViewID.DIALOGUE
         self.screen_obj_positions:dict[str, tuple[int,int]] = {
             # (x_left, y_top)
             CoinCard: {'left': 0, 'top': 3},
@@ -122,7 +177,6 @@ class InventoryView(View):
         self.screen_objs.extend([self.background,
                                 self.inventory_display])
         
-
 class ViewsManager:
     def __init__(self, player) -> None:
         self.active_view:View = None
@@ -143,12 +197,15 @@ class ViewsManager:
             self.active_view.activate()
         EVENT_HANDLER.set_context(self.active_view.screen_objs)
               
-    def recieve_triggers(self, triggers:list[Trigger]) -> None:
-        for trigger in triggers:
-            for obj in self.active_view.screen_objs:
-                if hasattr(obj, "recieve_triggers"):
-                    obj.recieve_triggers(self.trigger_queue)
+    def run(self) -> None:
+        self._check_triggers()
 
+    def _check_triggers(self) -> None:
+        triggers:list[Trigger] = EVENT_HANDLER.get_triggers()
+
+        self.active_view.check_triggers(triggers)
+
+        for trigger in triggers:
             if trigger.type == "OPEN_INVENTORY":
                 self.change_view(ViewID.INVENTORY)
             if trigger.type == "CLOSE_INVENTORY":

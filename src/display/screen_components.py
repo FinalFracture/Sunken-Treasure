@@ -8,7 +8,7 @@ from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layer
 from src.utils.enumerations import ViewID
 from src.display import OverlaySprite
 from src.story.generic_dialogue import get_dialogue
-from src.event_managing import EVENT_HANDLER
+from src.event_managing import EVENT_HANDLER, Trigger
 
 class Overlay(OverlaySprite):
     def __init__(self, owner):
@@ -349,6 +349,44 @@ class Textbox(OverlaySprite):
         if self.master not in overlay_sprites:
             self.kill()
 
+class CrewUiSlot(OverlaySprite):
+    def __init__(self) -> None:
+        super().__init__()
+        image_path = 'assets/images/hud/crew_quarters/crew_space.png'
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.z = overlay_layers['hud_elements']
+        self.crew_icon_top_pixel = 0
+        self.crew_icon_left_pixel = 0
+        self.place_holder_crew_sprite:Surface = Surface((32,32))
+        self.place_holder_crew_sprite.fill('lightgray')
+        self.crew_image_sprite:Generic = Generic(overlay_sprites,
+                                                 self.place_holder_crew_sprite, 
+                                                 offset=(self.crew_icon_left_pixel, self.crew_icon_top_pixel),
+                                                 relative_rect=self.rect)
+        self.children.append(self.crew_image_sprite)
+
+    def update(self, *args, **kwargs):
+        if  not self.rect.colliderect(self.crew_image_sprite.rect):
+            self.crew_icon_top_pixel = 17 + self.rect.top 
+            self.crew_icon_left_pixel = 1 + self.rect.left 
+            self.crew_title_top_pixel = 2 + self.rect.top 
+            self.crew_title_left_pixel = 2 + self.rect.left
+            self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
+            self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
+        return super().update(*args, **kwargs)
+    
+    def fill_slot(self, crew_member) -> None:
+        self.crew_image_sprite.kill()
+        self.crew_image_sprite = crew_member.sprite
+        overlay_sprites.add(crew_member.sprite)
+        self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
+        self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
+
+    def clear_slot(self) -> None:
+        self.crew_image_sprite.kill()
+        self.crew_image_sprite = self.place_holder_crew_sprite
+
 class CrewDisplay(OverlaySprite):
     """A class to create and manage the UI for displaying crew on the HUD and in game menus
     
@@ -365,8 +403,7 @@ class CrewDisplay(OverlaySprite):
         self.crew_slot_positions:dict[int, tuple[int,int]] = {}
         self.children.extend(self.current_crew_slots)
         self._set_crew_slot_positions()
-         
-    
+            
     def _set_crew_slot_positions(self) -> None:
         x_padding = 4
         x_spacing= 8
@@ -389,25 +426,24 @@ class CrewDisplay(OverlaySprite):
         for slot_index, slot in enumerate(self.current_crew_slots):
             slot.rect.topleft = self.crew_slot_positions[slot_index+1]
 
-    def _create_crew_space(self) -> None:
+    def _create_crew_space(self) -> CrewUiSlot:
         """Create an empty spot in UI for a crew member
         
         """
         if len(self.current_crew_slots) < self.max_crew:
             new_slot:CrewUiSlot = CrewUiSlot()
             self.current_crew_slots.append(new_slot)
+            self.children.append(new_slot)
+            return new_slot
         else:
             raise IndexError
 
-    def populate(self, crew_list:list) -> None:
-        self.current_crew_slots = [] # clear the list
-        for index, crew in enumerate(crew_list):
-            try:
-                self._create_crew_space()
-                self.current_crew_slots[index].fill_slot(crew)
-                
-            except IndexError as ie:
-                print("Crew Quarters is full")
+    def populate(self, crew:CrewUiSlot) -> None:
+        try:
+            new_slot = self._create_crew_space()
+            new_slot.fill_slot(crew)
+        except IndexError as ie:
+            print("Crew Quarters is full")
         self._position_crew_slots()
 
     def set_position(self, 
@@ -429,52 +465,13 @@ class CrewDisplay(OverlaySprite):
             self.rect.centerx = centerx
         if centery:
             self.rect.centery = centery
-            print(centery)
         if hasattr(self, "textbox"):
             self.textbox.set_position()
+        self._set_crew_slot_positions()
 
     def activate(self) -> None:
         super().activate()
         self._position_crew_slots()
-
-class CrewUiSlot(OverlaySprite):
-    def __init__(self) -> None:
-        super().__init__()
-        image_path = 'assets/images/hud/crew_quarters/crew_space.png'
-        self.image = pygame.image.load(image_path).convert_alpha()
-        self.rect = self.image.get_rect()
-        self.z = overlay_layers['hud_elements']
-        self.crew_icon_top_pixel = 0
-        self.crew_icon_left_pixel = 0
-        self.place_holder_crew_sprite:Surface = Surface((32,32))
-        self.place_holder_crew_sprite.fill('lightgray')
-        self.crew_image_sprite:Generic = Generic(overlay_sprites,
-                                                 self.place_holder_crew_sprite, 
-                                                 offset=(self.crew_icon_left_pixel, self.crew_icon_top_pixel),
-                                                 relative_rect=self.rect)
-        self.children.extend(self.crew_image_sprite)
-         
-
-    def update(self, *args, **kwargs):
-        if  not self.rect.colliderect(self.crew_image_sprite.rect):
-            self.crew_icon_top_pixel = 17 + self.rect.top 
-            self.crew_icon_left_pixel = 1 + self.rect.left 
-            self.crew_title_top_pixel = 2 + self.rect.top 
-            self.crew_title_left_pixel = 2 + self.rect.left
-            self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
-            self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-        return super().update(*args, **kwargs)
-    
-    def fill_slot(self, crew_member) -> None:
-        self.crew_image_sprite.kill()
-        self.crew_image_sprite = crew_member.sprite
-        overlay_sprites.add(crew_member.sprite)
-        self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
-        self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
-
-    def clear_slot(self) -> None:
-        self.crew_image_sprite.kill()
-        self.crew_image_sprite = self.place_holder_crew_sprite
 
 class HUDCard(OverlaySprite):
     def __init__(self, card_type:str) -> None:
@@ -561,6 +558,10 @@ class BearingCard(HUDCard):
         self.clime_textbox = Textbox(self, self.rect, offset=clime_textbox_topleft_pixel, fontsize=8, position='relative')
         self.children.append(self.clime_textbox)
          
+    def check_triggers(self, triggers:list[Trigger]) -> None:
+        for trigger in triggers:
+            if trigger.type == "UPDATE_BEARING":
+                self.update_textbox(trigger.payload)
     
     def update_textbox(self, coords) -> None:
         meridian = f'X: {coords[0]}'
@@ -774,7 +775,28 @@ class InventoryDisplay(OverlaySprite):
         self.inv_pages:dict[int, list] = {}
         self.desc_display = DescriptionDisplay(self.rect)
         self.children.append(self.desc_display)
+
+    def input(self, keys, mouse_pos, buttons, events, dt):
+        def _single_click_operations(event):
+            pass
+
+        def _single_press_operations(event):
+
+            if event.key == pygame.K_SPACE: #interact with objects
+                self._interact()
+
+            if event.key ==pygame.K_e:
+                EVENT_HANDLER.emit(Trigger("CLOSE_INVENTORY"))
+
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                _single_click_operations(event)
+            if event.type == pygame.KEYDOWN:
+                _single_press_operations(event)
          
+    def check_triggers(self, triggers:list[Trigger]) -> None:
+        pass
+
 class ClipboardDisplay(OverlaySprite):
     def __init__(self) -> None:
         super().__init__()

@@ -7,7 +7,7 @@ from typing import Any
 @dataclass
 class Trigger:
     type: str
-    payload: Any
+    payload:Any = None
 
 
 class EventHandler:
