@@ -45,7 +45,7 @@ class View:
                 obj.activate()
                 overlay_sprites.add(obj)
             except:
-                print(f"{type(obj)} does not have activate method")
+                pass
 
     def deactivate(self) -> None:
         for obj in self.screen_objs:
@@ -113,9 +113,6 @@ class OverworldView(View):
                         self.screen_objs.append(self.coin_card)
                         self.coin_card.activate()
                 self._position_screen_objs()
-
-            if trigger.type == "ADD_CREW":
-                self.crew_display.populate(trigger.payload)
                 
         super().check_triggers(triggers)
 

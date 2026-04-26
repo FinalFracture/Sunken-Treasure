@@ -358,40 +358,42 @@ class CrewUiSlot(OverlaySprite):
         self.z = overlay_layers['hud_elements']
         self.crew_icon_top_pixel = 0
         self.crew_icon_left_pixel = 0
-        self.place_holder_crew_sprite:Surface = Surface((32,32))
-        self.place_holder_crew_sprite.fill('lightgray')
-        self.crew_image_sprite:Generic = Generic(overlay_sprites,
-                                                 self.place_holder_crew_sprite, 
+        self.placeholder_crew:Surface = Surface((32,32))
+        self.placeholder_crew.fill('lightgray')
+        self.placeholder_crew_sprite:Generic = Generic(overlay_sprites,
+                                                 self.placeholder_crew, 
                                                  offset=(self.crew_icon_left_pixel, self.crew_icon_top_pixel),
                                                  relative_rect=self.rect)
-        self.children.append(self.crew_image_sprite)
+        self.crew_slot_sprite = self.placeholder_crew_sprite
 
     def update(self, *args, **kwargs):
-        if  not self.rect.colliderect(self.crew_image_sprite.rect):
+        if  not self.rect.colliderect(self.crew_slot_sprite.rect):
             self.crew_icon_top_pixel = 17 + self.rect.top 
             self.crew_icon_left_pixel = 1 + self.rect.left 
             self.crew_title_top_pixel = 2 + self.rect.top 
             self.crew_title_left_pixel = 2 + self.rect.left
-            self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
-            self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
+            self.crew_slot_sprite.rect.top = self.crew_icon_top_pixel
+            self.crew_slot_sprite.rect.left = self.crew_icon_left_pixel
         return super().update(*args, **kwargs)
     
     def fill_slot(self, crew_member) -> None:
-        self.crew_image_sprite.kill()
-        self.crew_image_sprite = crew_member.sprite
-        overlay_sprites.add(crew_member.sprite)
-        self.crew_image_sprite.rect.top = self.crew_icon_top_pixel
-        self.crew_image_sprite.rect.left = self.crew_icon_left_pixel
+        self.crew_slot_sprite.deactivate() # turn off the place holder
+        self.crew_slot_sprite = crew_member.sprite
+        self.children.append(self.crew_slot_sprite)
+        self.crew_slot_sprite.activate() # turn on the actual
+        self.crew_slot_sprite.rect.top = self.crew_icon_top_pixel
+        self.crew_slot_sprite.rect.left = self.crew_icon_left_pixel
 
     def clear_slot(self) -> None:
-        self.crew_image_sprite.kill()
-        self.crew_image_sprite = self.place_holder_crew_sprite
+        self.crew_slot_sprite.deactivate()
+        self.children.remove(self.crew_slot_sprite)
+        self.crew_slot_sprite = self.placeholder_crew_sprite
+        self.crew_slot_sprite.activate()
 
 class CrewDisplay(OverlaySprite):
     """A class to create and manage the UI for displaying crew on the HUD and in game menus
     
     """
-    
     def __init__(self) -> None:
         super().__init__()
         image_path:str = 'assets/images/hud/crew_quarters/crew_quarters_hud.png'
@@ -432,15 +434,17 @@ class CrewDisplay(OverlaySprite):
         """
         if len(self.current_crew_slots) < self.max_crew:
             new_slot:CrewUiSlot = CrewUiSlot()
+            new_slot.activate()
             self.current_crew_slots.append(new_slot)
             self.children.append(new_slot)
             return new_slot
         else:
             raise IndexError
 
-    def populate(self, crew:CrewUiSlot) -> None:
+    def add_crew(self, crew) -> None:
         try:
             new_slot = self._create_crew_space()
+            self.children.append(crew.sprite)
             new_slot.fill_slot(crew)
         except IndexError as ie:
             print("Crew Quarters is full")
@@ -472,6 +476,11 @@ class CrewDisplay(OverlaySprite):
     def activate(self) -> None:
         super().activate()
         self._position_crew_slots()
+
+    def check_triggers(self, triggers:list[Trigger]) -> None:
+        for trigger in triggers:
+            if trigger.type == "ADD_CREW":
+                self.add_crew(trigger.payload)
 
 class HUDCard(OverlaySprite):
     def __init__(self, card_type:str) -> None:

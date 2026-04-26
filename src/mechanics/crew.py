@@ -6,7 +6,7 @@ from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
 from src.story.vocabularies import *
 from src.mechanics.tools import Tool, TOOL_MAP
-from src.display.screen_components import HUDCard, CARD_MAP
+from src.display.screen_components import HUDCard, CARD_MAP, OverlaySprite
 
 image_paths:str = 'assets/images/crew/tool_'
 
@@ -592,9 +592,9 @@ def generate_name() -> str:
       getting_name = False
       return(full_name)
 
-class CrewSprite(Sprite):
+class CrewSprite(OverlaySprite):
     def __init__(self, tool_name:str, master) -> None:
-       super().__init__(overlay_sprites)
+       super().__init__()
        self.image = load(image_paths + tool_name + '.png').convert_alpha()
        self.rect = self.image.get_rect()
        self.z=overlay_layers['menu_items']
