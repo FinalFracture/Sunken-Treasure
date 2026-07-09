@@ -1,7 +1,7 @@
 import pygame
 from math import floor
 from src.mechanics.tools import GameItem
-from src.display.screen_components import IconBG, DescriptionDisplay, UiButton
+from src.display.screen_components import InvSpace, DescriptionDisplay, UiButton
 from src.utils.enumerations import ViewID
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
@@ -14,7 +14,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.z:int = overlay_layers['menu']
         self.master:pygame.sprite.Sprite = owner
         self.key_pressed:bool = False
-        self.interactable_slots:list[IconBG] = []
+        self.interactable_slots:list[InvSpace] = []
         self._menu_setup(inv_pages)
         self.stop_showing = False
         overlay_sprites.remove(element for element in self.menu_ui)  #remove from group to prevent from rendering.
@@ -31,7 +31,7 @@ class InventoryMenu(pygame.sprite.Sprite):
                 slot_num = 0
                 for row_num in range(self.inv_page_rows):
                     for col_num in range(self.inv_page_cols):
-                        slot = IconBG(None, (0,0))
+                        slot = InvSpace(None, (0,0))
                         overlay_sprites.remove(slot)
                         slot_width = slot.rect.width
                         slot_height = slot.rect.height
@@ -47,7 +47,7 @@ class InventoryMenu(pygame.sprite.Sprite):
         self.inv_page_rows = 8
         self.inv_page_cols = 6
         self.full_slots = 0
-        self.all_slots:list[IconBG] = []
+        self.all_slots:list[InvSpace] = []
         self.image = pygame.image.load('assets/images/hud/menu_bg.png')
         self.rect = self.image.get_rect()
         self.exit_button = pygame.Rect(0,0, 11, 11)
@@ -56,9 +56,9 @@ class InventoryMenu(pygame.sprite.Sprite):
 
         #items to display setup
         self.menu_ui = [self, self.item_stats_display] + self.item_stats_display.children
-        self.inv_pages:dict[int, dict[int, IconBG]] = {}
+        self.inv_pages:dict[int, dict[int, InvSpace]] = {}
         _setup_inv_slots()
-        self.active_inv_page:dict[int, IconBG] = self.inv_pages[self.inv_page_index]
+        self.active_inv_page:dict[int, InvSpace] = self.inv_pages[self.inv_page_index]
         
     def show_menu(self) -> None:
         """ display to the screen and add to players inventory"""

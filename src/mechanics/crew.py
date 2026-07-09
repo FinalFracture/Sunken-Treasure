@@ -1,12 +1,11 @@
 import random
-from pygame.sprite import Sprite
 from pygame.image import load
 from src.utils.enumerations import CardID
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, overlay_layers, cameragroup_layers
 from src.story.vocabularies import *
 from src.mechanics.tools import Tool, TOOL_MAP
-from src.display.screen_components import HUDCard, CARD_MAP, OverlaySprite
+from src.display.screen_components import OverlaySprite
 
 image_paths:str = 'assets/images/crew/tool_'
 
@@ -671,6 +670,9 @@ class Crew:
             self.deselect()
         else:
             self._select()
+
+    def get_item(self, item) -> None:
+       self.master.add_to_inventory(item)
 
 def build_crew_member(owner, role_name) -> Crew:
    for role in crew_roles:

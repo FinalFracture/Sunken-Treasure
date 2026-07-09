@@ -7,6 +7,7 @@ from src.utils.timer import Timer
 from src.utils.enumerations import ViewID
 from src.display.screen_components import *
 from src.characters.player_character import PlayerCharacter
+from src.mechanics.items import GameItem
 
 
 
@@ -158,7 +159,7 @@ class InventoryView(View):
         super().__init__()
         self.view_id = ViewID.INVENTORY
         self.screen_obj_positions:dict[str, tuple[int,int]] = {
-            InventoryDisplay: (55,3),
+            InventoryDisplay: (100,30),
             CrewDisplay: (0,0), #fill out on desktop
             ClipboardDisplay: (320,3), #adjust on desktop
             'exit': (0,0)
@@ -172,8 +173,14 @@ class InventoryView(View):
         self.background = Generic(overlay_sprites, bg, z=overlay_layers['hud_background'])
         self.inventory_display = InventoryDisplay()
         self.screen_objs.extend([self.background,
-                                self.inventory_display])
-        
+                                self.inventory_display])      
+
+    def check_triggers(self, triggers) -> None:
+        for trigger in triggers:
+            if trigger.type == "OPEN_INVENTORY":
+                self.inventory_display.populate_inv_space(trigger.payload)
+        return super().check_triggers(triggers)
+
 class ViewsManager:
     def __init__(self, player) -> None:
         self.active_view:View = None
@@ -199,11 +206,9 @@ class ViewsManager:
 
     def _check_triggers(self) -> None:
         triggers:list[Trigger] = EVENT_HANDLER.get_triggers()
-
-        self.active_view.check_triggers(triggers)
-
         for trigger in triggers:
             if trigger.type == "OPEN_INVENTORY":
                 self.change_view(ViewID.INVENTORY)
             if trigger.type == "CLOSE_INVENTORY":
                 self.change_view(ViewID.OVERWORLD)
+        self.active_view.check_triggers(triggers)

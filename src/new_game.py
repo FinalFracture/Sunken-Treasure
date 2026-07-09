@@ -15,7 +15,7 @@ class main_loop:
     def __init__(self, game) -> None:
         self.game = game
         self.player = PlayerCharacter('galleon')
-        self.player.add_crew(crew_member=build_crew_member(self.player, 'explorer'))
+        self.player.add_crew(crew_member=build_crew_member(self.player, 'angler'))
         self.view_manager = ViewsManager(self.player)
         self.view_manager.change_view(ViewID.OVERWORLD)
         self.maps = []  

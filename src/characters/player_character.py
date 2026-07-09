@@ -7,15 +7,16 @@ from src.utils.cameras import all_sprites, screen_update
 from src.utils.enumerations import ViewID
 from src.display.character_sprites import CharacterSprite
 #from src.display.screen_components import InventoryDisplay
-from src.display.Inventory_menu import InventoryMenu
 from src.characters import Character, BOAT_STATS
-from src.display.screen_components import HUDCard
+from src.display.screen_components import InventoryDisplay
+from src.mechanics import GameItem
 
 class PlayerCharacter(Character): 
     def __init__(self, ship_type):
         super().__init__(ship_type)
         self.sprite = CharacterSprite(self, starting_pos=(0,0), ship_type=ship_type)
         self.stats = BOAT_STATS[ship_type]
+        self.max_inventory = self.stats['inv_pages'] * InventoryDisplay.page_spaces
         self.inventory = []
         self.timers = {}
         self.gps_coord:tuple[int, int] = (0,0)
@@ -78,6 +79,8 @@ class PlayerCharacter(Character):
             except IndexError as ie:
                 pass
                 # play reject sound
+            except AttributeError as ae:
+                pass # tool doesn't have an activation
 
         def _single_press_operations(event):
             key_num = 0
@@ -115,8 +118,15 @@ class PlayerCharacter(Character):
         self.overlay.position_crew_icons(self.crew_list)
         return super().resume_play()
             
-    def add_to_inventory(self, item):
-        return self.inventory.add(item)
+    def check_inventory(self) -> bool:
+        print(len(self.inventory))
+        if len(self.inventory) < self.max_inventory:
+            return True
+        else:
+            return False
+    
+    def add_to_inventory(self, item:GameItem) -> bool:
+        self.inventory.append(item)
     
     def update_money(self, coins:int) -> None:
         self.gold += coins

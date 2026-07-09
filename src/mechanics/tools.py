@@ -25,11 +25,12 @@ class Tool:
         self.timers = {} # {'using':Timer(3000, ending_func = None)}
 
     def retrieve(self, caught_item):
-        find_accepted:bool = self.master.master.add_to_inventory(caught_item) # bool to determine if there is inv space
+        find_accepted:bool = self.master.master.check_inventory() # bool to determine if there is inv space
 
         if find_accepted == True:
             current_find = Generic(all_sprites, caught_item.sprite.image, z = cameragroup_layers['items'], relative_rect=self.master.master.sprite.status_rect)
-        
+            current_find.activate()
+            self.master.get_item(current_find)
             def _move_up(dt):
                 current_find.mod_position(y_mod=-1)
             
@@ -53,7 +54,7 @@ class FishingPole(Tool):
        
     def use(self) -> None:
         """every 4 seconds, roll " a dice" to see if you find a fish"""
-        self.frame_counter += 1 * EVENT_HANDLER.dt
+        self.frame_counter += EVENT_HANDLER.dt
         if self.frame_counter > self.catch_interval:
             self._determine_find_rate()
             possible_finds = self._determine_finds()

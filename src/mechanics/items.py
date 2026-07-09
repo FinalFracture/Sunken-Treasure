@@ -1,9 +1,6 @@
-from pygame import sprite, Surface, Rect
 from pygame.image import load
-from src.event_managing import EVENT_HANDLER
-from src.utils.support import import_folder
 from src.utils.settings import *
-from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers, all_sprites
+from src.display.screen_components import GameItemSprite
 
 item_image_paths = 'assets/images/items/'
 
@@ -67,15 +64,6 @@ for type_name, item_type in item_stats.items():
         full_path = f'{item_image_paths}/{item_name}.png'
         gameitem['image'] = load(full_path).convert_alpha()
     
-class GameItemSprite(sprite.Sprite):
-    def __init__(self, image:Surface) -> None:
-        super().__init__(overlay_sprites)
-        self.image:Surface = image
-        self.rect:Rect = self.image.get_rect()
-        self.z = cameragroup_layers['items']
-        overlay_sprites.remove(self)
-
-
 class GameItem():
     def __init__(self, item_type:str, item_name:str) -> None:
         self.item_name:str = item_name 

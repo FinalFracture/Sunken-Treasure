@@ -91,42 +91,6 @@ class UiButton(OverlaySprite):
     def click(self) -> None:
         self.function(self.arg)
 
-class IconBG(OverlaySprite):
-    def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
-        super().__init__()
-        self.image = pygame.image.load('assets/images/HUD/icon_bg.png').convert_alpha()
-        self.rect = self.image.get_rect(center = pos)
-        self.subject = subject
-        self.z = z
-        self.indicator:bool = None
-        self.value_display = Textbox(self, max_rect=self.rect, fontsize= 8, z=overlay_layers['text'])
-        self.indicator:MenuIndicator = MenuIndicator(self.rect)
-        self.children.extend((MenuIndicator, self.value_display))
-
-    def update(self, dt): 
-        if self.subject:
-            self.subject.sprite.rect.center = self.rect.center
-            self.value_display.set_text(str(self.subject.rarity) if hasattr(self.subject,'rarity') else str(self.subject.value))
-            self.value_display.rect.center = (self.rect.x, self.rect.y)
-        else:
-            #remove the value display from the display group
-            self.value_display.set_text(' ')
-    
-    def click(self, toggle=None):
-        #define what happens when the mouse clicks while in the rect boundary of an icon bg.
-        if toggle == 0:
-            self.indicator.de_indicate()
-            if self.subject is not None:
-                self.subject.selected = False
-        elif toggle == 1:
-            self.subject.selected = True
-            self.indicator.indicate()   
-        else:
-            if self.subject is not None and not self.subject.selected:
-                self.click(toggle=1)
-            elif self.subject is not None and self.subject.selected:
-                self.click(toggle=0)
-
 class UpgradeIconBg(OverlaySprite):
     def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
         super().__init__()
@@ -166,25 +130,6 @@ class UpgradeIconBg(OverlaySprite):
             if self.subject and self.selected:
                 self.deselect()
 
-class MenuIndicator(OverlaySprite):
-    """When the player selects items to purchase, this class highlights the selected item slots to 
-    visually indicate what has been selected. This will also apply to any other menues where inventory
-    slots are selected, and not immediately resolved."""
-    def __init__(self, owning_rect, z = overlay_layers['menu_aux']):
-        super().__init__()
-        self.z = z
-        self.reference_rect = owning_rect
-        self.image = pygame.Surface((owning_rect.width, owning_rect.height))
-        self.rect = self.image.get_rect()
-        self.rect.width = self.rect.width + 6
-        self.rect.height = self.rect.height + 6
-        self.rect.center = owning_rect.center
-        self.image.fill(color='Green')
-
-    def activate(self) -> None:
-        super().activate()
-        self.rect.center = self.reference_rect.center
-
 class HoverMessage(OverlaySprite):
     """This class is a message that displays at its specified coords. it is uninteractable."""
     def __init__(self
@@ -221,8 +166,11 @@ class HoverMessage(OverlaySprite):
         self.image = self.font.render(self.text, False, self.color)
  
 class Generic(OverlaySprite):
+    # may want to split this into a "camera generic" and a "overlay generic"
+    # overlay is fixed on screen and does not repond to player movement (ie ui, menues, HUD, etc)
+    # camera sprites will move in response to player movement (caught items, map tiles, NPC's, etc)
     def __init__(self, display_group, surface_image, z=overlay_layers['menu_items'], offset=(0,0), topleft_pos:tuple[int, int]=(0,0), relative_rect:pygame.rect.Rect|None=None):
-        super().__init__()
+        super().__init__(display_group)
         self.timers = {}
         self.image:Surface = surface_image
         self.relative_rect = relative_rect
@@ -771,7 +719,81 @@ class DialogBox(OverlaySprite):
         if hasattr(self, "textbox"):
             self.textbox.set_position()
 
+class GameItemSprite(OverlaySprite):
+    def __init__(self, image:Surface) -> None:
+        super().__init__()
+        self.image:Surface = image
+        self.rect:Rect = self.image.get_rect()
+        self.z = cameragroup_layers['items']
+
+class MenuIndicator(OverlaySprite):
+    """When the player selects items to purchase, this class highlights the selected item slots to 
+    visually indicate what has been selected. This will also apply to any other menues where inventory
+    slots are selected, and not immediately resolved."""
+    def __init__(self, owning_rect, z = overlay_layers['menu_aux']):
+        super().__init__()
+        self.z = z
+        self.reference_rect = owning_rect
+        self.image = pygame.Surface((owning_rect.width, owning_rect.height))
+        self.rect = self.image.get_rect()
+        self.rect.width = self.rect.width + 6
+        self.rect.height = self.rect.height + 6
+        self.rect.center = owning_rect.center
+        self.image.fill(color='Green')
+
+    def activate(self) -> None:
+        super().activate()
+        self.rect.center = self.reference_rect.center
+
+class InvSpace(OverlaySprite):
+    def __init__(self, subject = None, pos = (0,0), z = overlay_layers['menu_elements']):
+        super().__init__()
+        self.image = pygame.image.load('assets/images/HUD/icon_bg.png').convert_alpha()
+        self.rect = self.image.get_rect(center = pos)
+        self.subject = subject
+        self.z = z
+        self.indicator:bool = None
+        self.value_display = Textbox(self, max_rect=self.rect, fontsize= 8, z=overlay_layers['text'])
+        self.indicator:MenuIndicator = MenuIndicator(self.rect)
+        self.children.extend((self.indicator, self.value_display))
+        self.deactivate()
+
+    def update(self, dt): 
+        if self.subject:
+            self.subject.sprite.rect.center = self.rect.center
+            self.value_display.set_text(str(self.subject.rarity) if hasattr(self.subject,'rarity') else str(self.subject.value))
+            self.value_display.rect.center = (self.rect.x, self.rect.y)
+        else:
+            #remove the value display from the display group
+            self.value_display.set_text(' ')
+    
+    def click(self, toggle=None):
+        #define what happens when the mouse clicks while in the rect boundary of an icon bg.
+        if toggle == 0:
+            self.indicator.de_indicate()
+            if self.subject is not None:
+                self.subject.selected = False
+        elif toggle == 1:
+            self.subject.selected = True
+            self.indicator.indicate()   
+        else:
+            if self.subject is not None and not self.subject.selected:
+                self.click(toggle=1)
+            elif self.subject is not None and self.subject.selected:
+                self.click(toggle=0)
+
+    def change_subject(self, item:GameItemSprite) -> None:
+        if self.subject:
+            self.subject.deactivate()
+        self.subject = item
+        self.subject.set_position()
+        item.activate()
+
 class InventoryDisplay(OverlaySprite):
+    columns = 6
+    rows = 8
+    page_spaces = columns * rows
+
     """
     A class that holds UI elements to display a characters inventory. 
     """
@@ -784,6 +806,26 @@ class InventoryDisplay(OverlaySprite):
         self.inv_pages:dict[int, list] = {}
         self.desc_display = DescriptionDisplay(self.rect)
         self.children.append(self.desc_display)
+        self.inv_grid:dict[int, InvSpace] = self._build_grid()
+
+    def _build_grid(self) -> dict[int, InvSpace]:
+        ref_inv_space = InvSpace()
+        ref_width = ref_inv_space.rect.width
+        ref_height = ref_inv_space.rect.height
+        horiz_pad = 8
+        vert_pad = 7
+        inv_space_counter = 1
+        inv_spaces = {}
+        for row in range(InventoryDisplay.rows):
+            centery = vert_pad + (row * ref_height) + (ref_height/2) + (row * vert_pad)
+            for col in range(InventoryDisplay.columns):
+                centerx = horiz_pad + (col * ref_width) + (ref_width/2) + (col * horiz_pad)
+                grid_space = InvSpace(None, pos=(centerx, centery))
+                self.children.append(grid_space)
+                inv_spaces[inv_space_counter] = grid_space
+                inv_space_counter += 1
+
+        return inv_spaces
 
     def input(self, keys, mouse_pos, buttons, events, dt):
         def _single_click_operations(event):
@@ -805,6 +847,20 @@ class InventoryDisplay(OverlaySprite):
          
     def check_triggers(self, triggers:list[Trigger]) -> None:
         pass
+
+    def _calc_inv_pages(self, inv_items:int) -> None:
+        pass
+
+    def populate_inv_space(self, inventory:list) -> None:
+        self.activate_children()
+        if len(inventory) > 0:
+            for index, inv_space in self.inv_grid.items():
+                inv_space.change_subject(inventory[index])
+        # build a single set of in spaces
+        # enum entire player in
+        # assign item to space by matching indexes
+        # page change just shift each spaces picked index by 48
+        # if items drop/sell/add/etc. re enum player inventory
 
 class ClipboardDisplay(OverlaySprite):
     def __init__(self) -> None:

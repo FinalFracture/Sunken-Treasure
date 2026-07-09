@@ -1,5 +1,5 @@
 import pygame
-from src.display.screen_components import Textbox, UiButton, IconBG
+from src.display.screen_components import Textbox, UiButton, InvSpace
 from src.utils.settings import *
 from src.utils.cameras import overlay_sprites, cameragroup_layers, overlay_layers
 
@@ -100,8 +100,8 @@ class TradeMenu(pygame.sprite.Sprite):
         self._update_carts()
 
     def _update_carts(self) -> None:
-        interactor_subjected_slots:list[IconBG] = [slot for slot in self.interactor.inventory_ui.inventory_slots.values() if slot.subject is not None ]
-        owner_subjected_slots:list[IconBG] = [slot for slot in self.master.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+        interactor_subjected_slots:list[InvSpace] = [slot for slot in self.interactor.inventory_ui.inventory_slots.values() if slot.subject is not None ]
+        owner_subjected_slots:list[InvSpace] = [slot for slot in self.master.inventory_ui.inventory_slots.values() if slot.subject is not None ]
 
         for slot in interactor_subjected_slots:
             if slot.subject.selected and slot.subject not in self.sell_cart:
